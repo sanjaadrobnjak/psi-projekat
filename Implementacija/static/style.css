@@ -1,0 +1,97 @@
+/* 
+#1B6C8C
+#F2EDDC
+#F2B441
+#BF5B04
+#260101 */
+
+body {
+    background-color: #F3EEDB;
+    color: #260101;
+    margin: 0;
+    padding: 0;
+}
+
+.btn-custom {
+    font-family: "Titan One", sans-serif;
+    font-weight: 400;
+    font-style: normal;
+    color: #1B6C8C;
+}
+
+.btn-custom:hover {
+    background-color: #1B6C8C;
+    border-color: #F2B441;
+    color: #F3EEDB;
+}
+
+.titan-one-regular {
+    font-family: "Titan One", sans-serif;
+    font-weight: 400;
+    font-style: normal;
+    color: #1B6C8C;
+    font-size: 4rem;
+}
+
+h1 {
+    font-family: "Titan One", sans-serif;
+    font-weight: 400;
+    font-style: normal;
+    color: #1B6C8C;
+    font-size: 4rem;
+    margin-top: 3rem;
+    margin-bottom: 3rem;
+    text-align: center;
+}
+
+.image-with-text {
+    overflow: hidden; /* Ensures the container wraps around the floated image */
+}
+
+.image-with-text img {
+    float: left; /* Float the image to the left */
+    margin-right: 20px; /* Adjust this margin to create space between the image and the text */
+}
+
+button a {
+    all: unset;
+}
+
+.logo-img {
+    width: 35%;
+    height: 35%;
+}
+
+.btn-submit {
+    font-family: "Titan One", sans-serif;
+    font-weight: 400;
+    font-style: normal;
+    background-color: #1B6C8C;
+    border-color: #F2B441;
+    color: #F3EEDB;
+}
+
+.btn-submit:hover {
+    color: #F3EEDB;
+}
+
+.player1 {
+    background-color: #1B6C8C;
+    color: #F3EEDB;
+}
+
+
+.player2 {
+    background-color: #F2B441;
+    color: #F3EEDB;
+}
+
+.score {
+    font-size: 5rem;
+}
+
+.wanted-number {
+    border: 1px dashed #BF5B04;
+    background-color: #1B6C8C;
+    color: #F3EEDB;
+}

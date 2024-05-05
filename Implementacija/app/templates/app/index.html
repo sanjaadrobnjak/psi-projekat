@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="row">
+    <div class="col">
+        <h1>Mreža Znanja</h1>
+    </div>
+</div>
+<div class="row">
+    <div class="col">
+        <img class="mx-auto d-block img-fluid" src="{% static 'logo.jpg' %}" alt="logo" width="35%" height="35%">
+    </div>
+</div>
+<div class="row">
+    <a class="btn btn-custom fs-custom" href="{% url 'guest-create-view' %}">Započni igru kao gost</a>
+    <a class="btn btn-custom fs-custom" href="{% url 'login-view' %}">Uloguj se</a>
+    <a class="btn btn-custom fs-custom" href="{% url 'register-view' %}">Nemaš nalog? Registruj se</a>
+</div>
+{% endblock %}
