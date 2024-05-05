@@ -77,11 +77,12 @@ WSGI_APPLICATION = "mreza_znanja.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": "database.db",
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": "mrezaznanja",
+        "PASSWORD": "123",
+        "USER": "root",
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
