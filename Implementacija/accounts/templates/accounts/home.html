@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="row">
+        <div class="col">
+            <h1 class="my-5 titan-one-regular text-center">
+                Dobrodošao 
+                {% if user_profile.Tip != "G" %}
+                nazad 
+                {% endif %}
+                {{ user_profile.user.username }}
+            </h1>
+        </div>
+    </div>
+    <div class="row">
+        <table class="mb-5 table table-striped table-bordered caption-top">
+            <caption>Rang lista igrača</caption>
+            <thead>
+                <tr>
+                    <th scope="col">Rang</th>
+                    <th scope="col">Korisničko ime</th>
+                    <th scope="col">Broj trofeja</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for player in best_players %}
+                <tr>
+                    <th scope="row">{{ forloop.counter }}.</th>
+                    <td>{{ player.user.username }}</td>
+                    <td>{{ player.BrojTrofeja }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="row">
+        <div class="col d-flex justify-content-center">
+            <button class="btn btn-custom fs-custom" onclick="location.href = '/game1.html'">Igraj okršaj!</button>
+        </div>
+
+        <div class="col d-flex justify-content-center">
+            <button class="btn btn-custom fs-custom" onclick="location.href = '/tournament.html'"
+                {% if user_profile.Tip == "G" %}
+                disabled
+                {% endif %}>
+                Započni turnir!
+            </button>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col d-flex justify-content-center">
+            <button class="btn btn-custom fs-custom" onclick="location.href = '/accounts/profile'"
+            {% if user_profile.Tip == "G" %}
+            disabled
+            {% endif %}>
+            Pregled profila</button>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col d-flex justify-content-center">
+            <a class="btn btn-custom fs-custom" href="/accounts/logout">Izloguj se</a>
+        </div>
+    </div>
+{% endblock %}

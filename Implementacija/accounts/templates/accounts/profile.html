@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="row">
+        <div class="col">
+            <h1 class="my-5 titan-one-regular text-center">
+                Statistika za igrača {{ profile.user.username }}:
+            </h1>
+        </div>
+    </div>
+    <div class="row mx-auto text-center">
+        <div class="col">
+            Ime: {{ profile.Ime }}
+        </div>
+    </div>
+    <div class="row mx-auto text-center">
+        <div class="col">
+            Prezime: {{ profile.Prezime }}
+        </div>
+    </div>
+
+    <div class="row mx-auto text-center">
+        <div class="col">
+            Korisničko ime: {{ profile.user.username }}
+        </div>
+    </div>
+    <div class="row mx-auto text-center">
+        <div class="col">
+            Broj osvojenih trofeja: {{ profile.BrojTrofeja }}
+        </div>
+    </div>
+    <div class="row mx-auto text-center">
+        <div class="col">
+            Naziv titule: {{ title }}
+        </div>
+    </div>
+    <!-- <div class="row mx-auto text-center">
+        <div class="col">
+            Pozicija na rang listi: 9.
+        </div>
+    </div> -->
+    <div class="row mx-auto text-center">
+        <div class="col">
+            Broj osvojenih poena na okršajima: {{ profile.BrojPoena }}
+        </div>
+    </div>
+    <div class="row mx-auto text-center mt-5">
+        <div class="col">
+            <a class="btn btn-submit" href="/accounts/home">Nazad</a>
+        </div>
+    </div>
+{% endblock %}
