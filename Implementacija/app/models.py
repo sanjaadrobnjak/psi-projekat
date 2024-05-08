@@ -46,14 +46,25 @@ class MrezaBrojeva(Igra):
     PomocniBroj5 = models.IntegerField()
     PomocniBroj6 = models.IntegerField()
 
+    class Meta:
+        verbose_name = 'MrezaBrojeva'
+        verbose_name_plural = 'MrezaBrojeva'
 
 class SkokNaMrezu(Igra):
     Postavka = models.TextField()
     Odgovor = models.IntegerField()
 
+    class Meta:
+        verbose_name = 'SkokNaMrezu'
+        verbose_name_plural = 'SkokNaMrezu'
+
 
 class PaukovaSifra(Igra):
     TrazenaRec = models.CharField(max_length=20)
+
+    class Meta:
+        verbose_name = 'PaukovaSifra'
+        verbose_name_plural = 'PaukovaSifra'
 
 
 class Umrezavanje(Igra):
@@ -79,9 +90,17 @@ class Umrezavanje(Igra):
     Postavka10 = models.CharField(max_length=20)
     Odgovor10 = models.CharField(max_length=20)
 
+    class Meta:
+        verbose_name = 'Umrezavanje'
+        verbose_name_plural = 'Umrezavanje'
+
 
 class UtekniPauku(Igra):
     TrazenaRec = models.CharField(max_length=20)
+
+    class Meta:
+        verbose_name = 'UtekniPauku'
+        verbose_name_plural = 'UtekniPauku'
 
 
 class OdigranaIgra(models.Model):
