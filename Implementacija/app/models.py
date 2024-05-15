@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.db import models
-
-# Create your models here.
+from django.db.models import Sum
+from .mixins import RandomSampleMixin
 
 
 class Korisnik(models.Model):
@@ -16,7 +16,6 @@ class Korisnik(models.Model):
     BrojPoena = models.IntegerField(default=0)
 
 
-
 class Turnir(models.Model):
     pass
 
@@ -28,16 +27,11 @@ class Ucestvuje(models.Model):
     OsvojeniBrojTrofeja = models.IntegerField(default=0)
 
 
-class Okrsaj(models.Model):
-    Igrac1 = models.ForeignKey(Korisnik, on_delete=models.RESTRICT, related_name="+")
-    Igrac2 = models.ForeignKey(Korisnik, on_delete=models.RESTRICT, related_name="+")
-
-
 class Igra(models.Model):
     pass
 
 
-class MrezaBrojeva(Igra):
+class MrezaBrojeva(Igra, RandomSampleMixin):
     TrazeniBroj = models.IntegerField()
     PomocniBroj1 = models.IntegerField()
     PomocniBroj2 = models.IntegerField()
@@ -47,27 +41,58 @@ class MrezaBrojeva(Igra):
     PomocniBroj6 = models.IntegerField()
 
     class Meta:
-        verbose_name = 'MrezaBrojeva'
-        verbose_name_plural = 'MrezaBrojeva'
+        verbose_name = "MrezaBrojeva"
+        verbose_name_plural = "MrezaBrojeva"
 
-class SkokNaMrezu(Igra):
+    def get_winner_and_score(self, player1_answer, player2_answer, round):
+        player1_diff = abs(player1_answer - self.TrazeniBroj)
+        player2_diff = abs(player2_answer - self.TrazeniBroj)
+
+        if player1_diff != player2_diff:
+            winner = 'blue' if player1_diff < player2_diff else 'orange'
+            winner_diff = min(player1_diff, player2_diff)
+        else:
+            winner= 'blue' if round == 1 else 'orange'
+            winner_diff = player1_diff
+        
+        return winner, self._calculate_score(winner_diff)
+
+    def _calculate_score(self, diff): 
+        if diff == 0:
+            return 30
+        elif diff == 1:
+            return 20
+        elif diff <= 5:
+            return 10
+        elif diff <= 10:
+            return 5
+        return 0
+
+    def get_player_points(self, player1_answer, player2_answer, round):
+        winner_color, winner_score = self.get_winner_and_score(player1_answer, player2_answer, round)
+        if winner_color == 'blue':
+            return winner_score, 0
+        return 0, winner_score
+
+
+class SkokNaMrezu(Igra, RandomSampleMixin):
     Postavka = models.TextField()
     Odgovor = models.IntegerField()
 
     class Meta:
-        verbose_name = 'SkokNaMrezu'
-        verbose_name_plural = 'SkokNaMrezu'
+        verbose_name = "SkokNaMrezu"
+        verbose_name_plural = "SkokNaMrezu"
 
 
-class PaukovaSifra(Igra):
+class PaukovaSifra(Igra, RandomSampleMixin):
     TrazenaRec = models.CharField(max_length=20)
 
     class Meta:
-        verbose_name = 'PaukovaSifra'
-        verbose_name_plural = 'PaukovaSifra'
+        verbose_name = "PaukovaSifra"
+        verbose_name_plural = "PaukovaSifra"
 
 
-class Umrezavanje(Igra):
+class Umrezavanje(Igra, RandomSampleMixin):
     TekstPitanja = models.TextField()
     Postavka1 = models.CharField(max_length=20)
     Odgovor1 = models.CharField(max_length=20)
@@ -91,20 +116,34 @@ class Umrezavanje(Igra):
     Odgovor10 = models.CharField(max_length=20)
 
     class Meta:
-        verbose_name = 'Umrezavanje'
-        verbose_name_plural = 'Umrezavanje'
+        verbose_name = "Umrezavanje"
+        verbose_name_plural = "Umrezavanje"
 
 
-class UtekniPauku(Igra):
+class UtekniPauku(Igra, RandomSampleMixin):
     TrazenaRec = models.CharField(max_length=20)
 
     class Meta:
-        verbose_name = 'UtekniPauku'
-        verbose_name_plural = 'UtekniPauku'
+        verbose_name = "UtekniPauku"
+        verbose_name_plural = "UtekniPauku"
+
+
+class Okrsaj(models.Model):
+    Igrac1 = models.ForeignKey(Korisnik, on_delete=models.RESTRICT, related_name="+")
+    Igrac2 = models.ForeignKey(Korisnik, on_delete=models.RESTRICT, related_name="+")
+
+    def blue_player_score(self):
+        return OdigranaIgra.objects.filter(Okrsaj=self).aggregate(total_sum=Sum('Igrac1Poeni'))['total_sum']
+    
+    def orange_player_score(self):
+        return OdigranaIgra.objects.filter(Okrsaj=self).aggregate(total_sum=Sum('Igrac2Poeni'))['total_sum']
 
 
 class OdigranaIgra(models.Model):
     Okrsaj = models.ForeignKey(Okrsaj, on_delete=models.RESTRICT)
     Igra = models.ForeignKey(Igra, on_delete=models.RESTRICT)
-    Igrac1Poeni = models.IntegerField()
-    Igrac2Poeni = models.IntegerField()
+    RedniBrojIgre = models.IntegerField() # 1 i 2 su MrezaBrojeva, ...
+    Igrac1Poeni = models.IntegerField(null=True)
+    Igrac2Poeni = models.IntegerField(null=True)
+
+

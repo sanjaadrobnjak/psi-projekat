@@ -1,4 +1,6 @@
 from app.models import Korisnik
+from app.models import MrezaBrojeva
+from app.models import OdigranaIgra
 from app.models import Okrsaj
 from channels.generic.websocket import WebsocketConsumer
 import json
@@ -18,12 +20,20 @@ class LobbyConsumer(WebsocketConsumer):
         else:
             k1 = Korisnik.objects.get(pk=_queued_consumer.scope['user'])
             k2 = Korisnik.objects.get(pk=self.scope['user'])
-            game = Okrsaj(Igrac1=k1, Igrac2=k2)
+            game = Okrsaj(
+                Igrac1=k1,
+                Igrac2=k2,
+)
+            game.save()
+            mb1, mb2 = MrezaBrojeva.sample(2)
+            OdigranaIgra(Okrsaj=game, Igra=mb1, RedniBrojIgre=1).save()
+            OdigranaIgra(Okrsaj=game, Igra=mb2, RedniBrojIgre=2).save()
             game.save()
             self.send(text_data=json.dumps({'gameUrl': f'/games/{game.id}'}))
             _queued_consumer.send(text_data=json.dumps({'gameUrl': f'/games/{game.id}'}))
             _queued_consumer = None
     
     def disconnect(self, code):
+        global _queued_consumer
         if _queued_consumer:
             _queued_consumer = None

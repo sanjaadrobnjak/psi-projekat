@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     "app",
     "accounts",
     "lobby",
+    'games',
 ]
 
 MIDDLEWARE = [

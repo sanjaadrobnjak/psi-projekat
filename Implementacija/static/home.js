@@ -10,8 +10,8 @@ document.getElementById('play-btn').addEventListener('click', function() {
     })
 
     socket.addEventListener('message', (e) => {
-        const data = JSON.parse(e.data)
-        console.log('Got message: ', data.gameUrl)
+        const {gameUrl} = JSON.parse(e.data)
+        window.location.href = gameUrl
     })
 })
 

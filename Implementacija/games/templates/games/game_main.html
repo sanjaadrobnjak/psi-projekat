@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+    {% include 'games/scoreboard.html' %}
+
+    <div id="game1">
+        {% include 'games/game1.html' %}
+    </div>
+    <div id="game2" style="display: none;">
+        {% include 'games/game2.html' %}
+    </div>
+    <div id="game3" style="display: none;">
+        {% include 'games/game3.html' %}
+    </div>
+    <div id="game4" style="display: none;">
+        {% include 'games/game4.html' %}
+    </div>
+    <div id="game5" style="display: none;">
+        {% include 'games/game5.html' %}
+    </div>
+    
+    <button onclick="nextGameUI()">Naredna igra</button>
+
+{% endblock %}
+
+{% block script %}
+    <script>const myColor = '{{ my_color }}' </script>
+    <script src="{% static 'game.js' %}"></script>
+{% endblock %}
