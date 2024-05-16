@@ -3,10 +3,13 @@ from app.models import OdigranaIgra
 from app.models import Okrsaj
 from channels.generic.websocket import JsonWebsocketConsumer
 from collections import defaultdict
+from operator import methodcaller
 
 consumers = defaultdict(dict)
 
 class GameConsumer(JsonWebsocketConsumer):
+    PUBLIC_METHODS = ('game1_answer', 'time_ran_out')
+
     def connect(self):
         game_id = self.scope['url_route']['kwargs']['game']
         game = Okrsaj.objects.get(pk=game_id)
@@ -69,24 +72,32 @@ class GameConsumer(JsonWebsocketConsumer):
             ... # Poslati ui naredne igre
 
     def receive_json(self, content):
+        if 'type' not in content:
+            return
+        method_name = content['type']
+        if method_name in self.PUBLIC_METHODS:
+            methodcaller(method_name, content)(self)
+    
+    def game1_answer(self, content):
         round_num = consumers[self.game.id]['round']
-        if content['type'] == 'game1-answer':
+        round = OdigranaIgra.objects.get(Okrsaj=self.game, RedniBrojIgre=round_num)
+        mb: MrezaBrojeva = round.Igra.mrezabrojeva
+        my_answer = eval(content['answer']) # izracunaj izraz
+
+        if self.opponent.answer is None:
+            self.answer = my_answer
+            return
+
+        player1_answer = my_answer if self.color == 'blue' else self.opponent.answer
+        player2_answer = my_answer if self.color == 'orange' else self.opponent.answer
+
+        round.Igrac1Poeni, round.Igrac2Poeni = mb.get_player_points(player1_answer, player2_answer, round_num)
+        round.save()
+        self.load_next_round()
+    
+    def time_ran_out(self, content):
+        round_num = consumers[self.game.id]['round']
+        if round_num in (1, 2): # vrijeme isteklo za igru MrezaBrojeva
             round = OdigranaIgra.objects.get(Okrsaj=self.game, RedniBrojIgre=round_num)
-            mb: MrezaBrojeva = round.Igra.mrezabrojeva
-            my_answer = eval(content['answer']) # izracunaj izraz
+            self.answer = -999
 
-            if self.opponent.answer is None:
-                self.answer = my_answer
-                return
-
-            player1_answer = my_answer if self.color == 'blue' else self.opponent.answer
-            player2_answer = my_answer if self.color == 'orange' else self.opponent.answer
-
-            round.Igrac1Poeni, round.Igrac2Poeni = mb.get_player_points(player1_answer, player2_answer, round_num)
-            round.save()
-            self.load_next_round()
-
-        elif content['type'] == 'time_ran_out':
-            if round_num in (1, 2): # vrijeme isteklo za igru MrezaBrojeva
-                round = OdigranaIgra.objects.get(Okrsaj=self.game, RedniBrojIgre=round_num)
-                self.answer = -999
