@@ -48,7 +48,7 @@ function setupGame1Listeners(ws) {
         e.preventDefault()
         const answer = document.querySelector('#game1-answer').value
         const msg = {
-            'type': 'game1-answer',
+            'type': 'game1_answer',
             answer
         }
         ws.send(JSON.stringify(msg))
