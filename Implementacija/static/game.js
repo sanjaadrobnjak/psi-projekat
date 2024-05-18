@@ -1,10 +1,8 @@
-let currentGame = 1;
-
-function nextGameUI() {
-    currentGame = currentGame % 5 + 1;
+function showGameUI(ui) {
     for (let i = 1; i <= 5; i++) {
-        const elem = document.getElementById(`game${i}`)
-        elem.style.display = (i == currentGame) ? 'block' : 'none';       
+        const currentUI = `game${i}`
+        const elem = document.getElementById(currentUI)
+        elem.style.display = (ui == currentUI) ? 'block' : 'none';       
     }
 }
 
@@ -20,10 +18,11 @@ function setupWebsocketConnection() {
 
     ws.addEventListener('open', () => console.log('connected'))
     ws.addEventListener('message', msg => {
-        const {type, data} = JSON.parse(msg.data)
-        console.log(type, data)
+        const {type, data, ui} = JSON.parse(msg.data)
+        console.log(type, data, ui)
         switch (type) {
         case 'update_ui':
+            showGameUI(ui)
             for (const [id, textContent] of Object.entries(data)) {
                 console.log(id, textContent)
                 document.getElementById(id).textContent = textContent
@@ -68,10 +67,35 @@ function setupTimer(ws) {
     }, 1000)
 }
 
+function setupGame2Listeners(ws) {
+    document.querySelector('#game2-answer').onkeyup = e => {
+        if (e.key === 'Enter') {
+            document.querySelector('#submit').click()
+        }
+    }
+
+    document.querySelector('#game2-submit').onclick = (e) => {
+        e.preventDefault()
+
+        let answerTime=new Date().getTime();
+        let answerTimeDiv = document.getElementById('answer-time');
+        answerTimeDiv.textContent = answerTime;
+        const answer = document.querySelector('#game2-answer').value
+        const msg = {
+            'type': 'game2_answer',
+            answer,
+            'answer_time':answerTime
+        }
+        ws.send(JSON.stringify(msg))
+    }
+}
+
+
 function main() {
     const ws = setupWebsocketConnection();
     setupTimer(ws);
     setupGame1Listeners(ws);
+    setupGame2Listeners(ws);
 }
 
 main()

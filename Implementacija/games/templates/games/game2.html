@@ -1,12 +1,13 @@
 <div class="row mt-5">
     <div class="col">
-        <p class="text-center">Lorem ipsum dolor sit amet consectetur adipisicing elit. Id blanditiis magnam, quam, soluta ratione ducimus, quia rerum atque accusamus sequi iusto reiciendis amet! Unde, incidunt totam at necessitatibus ducimus vero!</p>
+        <p class="text-center" id="game2-helper1"></p>
     </div>
 </div>
 <div class="row">
     <div class="col text-center">
         <label for="answer">Odgovor:</label>
-        <input type="text" name="answer" id="answer">
-        <button>Potvrdi</button>
+        <input type="number" name="answer" id="game2-answer" required>
+        <button id="game2-submit">Potvrdi</button>
+        <input type="hidden" id="answer-time" name="answer_time"> <!-- Pomerite ovaj red ispod input polja -->
     </div>
 </div>

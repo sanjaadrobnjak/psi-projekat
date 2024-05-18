@@ -12,3 +12,7 @@ class GameView(View):
             'orange_player': game.Igrac2,
             'my_color': my_color
         })
+
+
+
+
