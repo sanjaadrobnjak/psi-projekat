@@ -49,15 +49,15 @@ class MrezaBrojeva(Igra, RandomSampleMixin):
         player2_diff = abs(player2_answer - self.TrazeniBroj)
 
         if player1_diff != player2_diff:
-            winner = 'blue' if player1_diff < player2_diff else 'orange'
+            winner = "blue" if player1_diff < player2_diff else "orange"
             winner_diff = min(player1_diff, player2_diff)
         else:
-            winner= 'blue' if round == 1 else 'orange'
+            winner = "blue" if round == 1 else "orange"
             winner_diff = player1_diff
-        
+
         return winner, self._calculate_score(winner_diff)
 
-    def _calculate_score(self, diff): 
+    def _calculate_score(self, diff):
         if diff == 0:
             return 30
         elif diff == 1:
@@ -69,10 +69,23 @@ class MrezaBrojeva(Igra, RandomSampleMixin):
         return 0
 
     def get_player_points(self, player1_answer, player2_answer, round):
-        winner_color, winner_score = self.get_winner_and_score(player1_answer, player2_answer, round)
-        if winner_color == 'blue':
+        winner_color, winner_score = self.get_winner_and_score(
+            player1_answer, player2_answer, round
+        )
+        if winner_color == "blue":
             return winner_score, 0
         return 0, winner_score
+
+    @property
+    def nums(self):
+        return [
+            self.PomocniBroj1,
+            self.PomocniBroj2,
+            self.PomocniBroj3,
+            self.PomocniBroj4,
+            self.PomocniBroj5,
+            self.PomocniBroj6,
+        ]
 
 
 class SkokNaMrezu(Igra, RandomSampleMixin):
@@ -83,38 +96,43 @@ class SkokNaMrezu(Igra, RandomSampleMixin):
         verbose_name = "SkokNaMrezu"
         verbose_name_plural = "SkokNaMrezu"
 
-    def get_winner_and_score(self, player1_answer, player2_answer, round, player1_time, player2_time):
-        player1_answer=int(player1_answer)
-        player2_answer=int(player2_answer)
+    def get_winner_and_score(
+        self, player1_answer, player2_answer, round, player1_time, player2_time
+    ):
+        player1_answer = int(player1_answer)
+        player2_answer = int(player2_answer)
         player1_diff = abs(player1_answer - self.Odgovor)
         player2_diff = abs(player2_answer - self.Odgovor)
-        winner_score=0
+        winner_score = 0
 
         if player1_diff != player2_diff:
             # pobednik je ko je blizi odgovoru
-            winner = 'blue' if player1_diff < player2_diff else 'orange'
-            winner_score=3
+            winner = "blue" if player1_diff < player2_diff else "orange"
+            winner_score = 3
         else:
-            #ko je brze kliknuo
+            # ko je brze kliknuo
+            # PROVVERITI
             if player1_time < player2_time:
-                winner = 'blue'
+                winner = "blue"
                 winner_score = 3
             elif player1_time > player2_time:
-                winner = 'orange'
+                winner = "orange"
                 winner_score = 3
             else:
-                winner=None
-                winner_score=0
+                winner = None
+                winner_score = 0
 
         return winner, winner_score
 
-    def get_player_points(self, player1_answer, player2_answer, round, player1_time, player2_time):
-        winner_color, winner_score = self.get_winner_and_score(player1_answer, player2_answer, round, player1_time, player2_time)
-        if winner_color == 'blue':
+    def get_player_points(
+        self, player1_answer, player2_answer, round, player1_time, player2_time
+    ):
+        winner_color, winner_score = self.get_winner_and_score(
+            player1_answer, player2_answer, round, player1_time, player2_time
+        )
+        if winner_color == "blue":
             return winner_score, 0
         return 0, winner_score
-
-
 
 
 class PaukovaSifra(Igra, RandomSampleMixin):
@@ -182,7 +200,34 @@ class Umrezavanje(Igra, RandomSampleMixin):
         verbose_name = "Umrezavanje"
         verbose_name_plural = "Umrezavanje"
 
-    
+    def calculate_points(self, player1_answers, player2_answers):
+        # odgovori igrača su mi recnici (kljuc: postavka, vrednost: odgovor)
+        # Ucitavam odgovore iz baze
+        correct_answers = {
+            "Postavka1": self.Odgovor1,
+            "Postavka2": self.Odgovor2,
+            "Postavka3": self.Odgovor3,
+            "Postavka4": self.Odgovor4,
+            "Postavka5": self.Odgovor5,
+            "Postavka6": self.Odgovor6,
+            "Postavka7": self.Odgovor7,
+            "Postavka8": self.Odgovor8,
+            "Postavka9": self.Odgovor9,
+            "Postavka10": self.Odgovor10,
+        }
+
+        player1_score = 0
+        player2_score = 0
+
+        for postavka, odgovor in player1_answers.items():
+            if correct_answers.get(postavka) == odgovor:
+                player1_score += 3
+
+        for postavka, odgovor in player2_answers.items():
+            if correct_answers.get(postavka) == odgovor:
+                player2_score += 3
+
+        return player1_score, player2_score
 
 
 class UtekniPauku(Igra, RandomSampleMixin):
@@ -198,17 +243,19 @@ class Okrsaj(models.Model):
     Igrac2 = models.ForeignKey(Korisnik, on_delete=models.RESTRICT, related_name="+")
 
     def blue_player_score(self):
-        return OdigranaIgra.objects.filter(Okrsaj=self).aggregate(total_sum=Sum('Igrac1Poeni'))['total_sum']
-    
+        return OdigranaIgra.objects.filter(Okrsaj=self).aggregate(
+            total_sum=Sum("Igrac1Poeni")
+        )["total_sum"]
+
     def orange_player_score(self):
-        return OdigranaIgra.objects.filter(Okrsaj=self).aggregate(total_sum=Sum('Igrac2Poeni'))['total_sum']
+        return OdigranaIgra.objects.filter(Okrsaj=self).aggregate(
+            total_sum=Sum("Igrac2Poeni")
+        )["total_sum"]
 
 
 class OdigranaIgra(models.Model):
     Okrsaj = models.ForeignKey(Okrsaj, on_delete=models.RESTRICT)
     Igra = models.ForeignKey(Igra, on_delete=models.RESTRICT)
-    RedniBrojIgre = models.IntegerField() # 1 i 2 su MrezaBrojeva, ...
+    RedniBrojIgre = models.IntegerField()  # 1 i 2 su MrezaBrojeva, ...
     Igrac1Poeni = models.IntegerField(null=True)
     Igrac2Poeni = models.IntegerField(null=True)
-
-

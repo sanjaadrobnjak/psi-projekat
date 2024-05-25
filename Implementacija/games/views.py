@@ -1,18 +1,20 @@
-from django.shortcuts import render
-from django.views import View
 from app.models import Okrsaj
-# Create your views here.
+from django.contrib.auth.decorators import login_required
+from django.http import HttpResponseNotAllowed
+from django.shortcuts import render
+from django.utils.decorators import method_decorator
+from django.views import View
+
 
 class GameView(View):
+    @method_decorator(login_required)
     def get(self, request, game):
         game = Okrsaj.objects.get(pk=game)
-        my_color = 'blue' if request.user.username == game.Igrac1.user.username else 'orange'
+        player1 = game.Igrac1.user.username
+        player2 = game.Igrac2.user.username
+        if request.user.username not in (player1, player2):
+            return HttpResponseNotAllowed()
         return render(request, 'games/game_main.html', {
             'blue_player': game.Igrac1,
             'orange_player': game.Igrac2,
-            'my_color': my_color
         })
-
-
-
-

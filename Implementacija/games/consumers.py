@@ -3,6 +3,8 @@ from app.models import OdigranaIgra
 from app.models import Okrsaj
 from channels.generic.websocket import JsonWebsocketConsumer
 from collections import defaultdict
+from .evaluator import EvaluatorError
+from .evaluator import evaluate
 from operator import methodcaller
 
 from app.models import SkokNaMrezu
@@ -21,6 +23,8 @@ class GameConsumer(JsonWebsocketConsumer):
         game = Okrsaj.objects.get(pk=game_id)
         self.game = game
         username = self.scope['user'].username
+        if username != game.Igrac1.user.username and username != game.Igrac2.user.username:
+            return
         self.color = 'blue' if username == game.Igrac1.user.username else 'orange'
         consumers[game.id][self.color] = self
         consumers[game.id]['round'] = 1
@@ -137,9 +141,12 @@ class GameConsumer(JsonWebsocketConsumer):
         round_num = consumers[self.game.id]['round']
         round = OdigranaIgra.objects.get(Okrsaj=self.game, RedniBrojIgre=round_num)
         mb: MrezaBrojeva = round.Igra.mrezabrojeva
-        self.answer = eval(content['answer']) # izracunaj izraz
 
-        print(f'game1_answer: {self.answer=}, {self.opponent.answer=}')
+        try:
+            self.answer = evaluate(content['answer'], mb.nums) # izracunaj izraz
+        except EvaluatorError:
+            self.answer = 0
+
         if self.opponent.answer is None:
             return
 
@@ -151,7 +158,7 @@ class GameConsumer(JsonWebsocketConsumer):
         self.answer = None
         self.opponent.answer = None
         self.load_next_round()
-    
+
     def time_ran_out(self, content):
         round_num = consumers[self.game.id]['round']
         if round_num in (1, 2): # vrijeme isteklo za igru MrezaBrojeva

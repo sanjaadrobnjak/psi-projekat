@@ -1,7 +1,25 @@
+const game1Submit = document.querySelector('#game1-submit')
+const game1Answer = document.querySelector('#game1-answer')
+const timer = document.querySelector('#timer')
+
 let currentRow=0;
 let currentTile=0;
 
-function showGameUI(ui,isActive, ws) {
+function resetGame1UI() {
+    game1Submit.disabled = false
+    game1Answer.value = ''
+    timer.textContent = 60
+}
+
+function resetGameUI(ui) {
+    switch(ui) {
+        case 'game1':
+            resetGame1UI();
+            break
+    }
+}
+
+function showGameUI(ui) {
     for (let i = 1; i <= 5; i++) {
         const currentUI = `game${i}`
         const elem = document.getElementById(currentUI)
@@ -84,7 +102,7 @@ function setupWebsocketConnection() {
             }
             break
         case 'update_timer':
-            document.querySelector('#timer').textContent = data.value
+            timer.textContent = data.value
             break
         case 'guess':
             handleGuess(data);
@@ -108,21 +126,31 @@ function handleKeyInput(data) {
 }
 
 function setupGame1Listeners(ws) {
-    document.querySelector('#game1-answer').onkeyup = e => {
-        if (e.key === 'Enter') {
-            document.querySelector('#submit').click()
-        }
-    }
 
-    document.querySelector('#game1-submit').onclick = (e) => {
+    game1Answer.addEventListener('keydown', e => {
+        if (e.key === 'Enter') {
+            game1Submit.click()
+            return
+        }
+        if (e.ctrlKey || e.altKey || typeof e.key !== 'string' || e.key.length != 1) {
+            return
+        }
+        if (!'0123456789+-*/() '.includes(e.key)) {
+            e.preventDefault()
+        }
+    }, false)
+
+    game1Submit.onclick = (e) => {
         e.preventDefault()
-        const answer = document.querySelector('#game1-answer').value
+        game1Submit.disabled = true;
         const msg = {
             'type': 'game1_answer',
-            answer
+            'answer': game1Answer.value
         }
         ws.send(JSON.stringify(msg))
     }
+
+    game1Answer.focus()
 }
 
 function setupTimer(ws) {
