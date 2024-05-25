@@ -1,5 +1,6 @@
 from .models import MrezaBrojeva
 from .models import SkokNaMrezu
+from .models import PaukovaSifra
 from .models import OdigranaIgra
 from .models import Okrsaj
 from django.db.models.signals import post_save
@@ -14,6 +15,7 @@ def okrsaj_post_save(sender, instance, created, **kwargs):
     rounds = [
         *MrezaBrojeva.sample(2),
         *SkokNaMrezu.sample(10),
+        *PaukovaSifra.sample(2)
     ]
     for i, round in enumerate(rounds, start=1):
         OdigranaIgra(Okrsaj=instance, Igra=round, RedniBrojIgre=i).save()

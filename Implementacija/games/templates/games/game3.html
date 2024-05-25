@@ -1,63 +1,101 @@
-<div class="row w-50 mx-auto text-center h1 mt-5">
-    <div class="col"><span class="border border-primary">x</span></div>
-    <div class="col"><span class="border border-primary">x</span></div>
-    <div class="col"><span class="border border-primary">x</span></div>
-    <div class="col"><span class="border border-primary">x</span></div>
-    <div class="col"><span class="border border-primary">x</span></div>
-    <div class="col"><button class="btn btn-primary">Potvrdi</button></div>
-</div>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        
+    }
 
-<div class="row w-50 mx-auto text-center h1 mt-5">
-    <div class="col"><span class="border border-primary"></span></div>
-    <div class="col"><span class="border border-primary"></span></div>
-    <div class="col"><span class="border border-primary"></span></div>
-    <div class="col"><span class="border border-primary"></span></div>
-    <div class="col"><span class="border border-primary"></span></div>
-    <div class="col"><button class="btn btn-primary" disabled>Potvrdi</button></div>
-</div>
+    .game-container {
+        text-align: center;
+    }
 
-<div class="row w-50 mx-auto text-center h1 mt-5">
-    <div class="col"><span class="border border-primary"></span></div>
-    <div class="col"><span class="border border-primary"></span></div>
-    <div class="col"><span class="border border-primary"></span></div>
-    <div class="col"><span class="border border-primary"></span></div>
-    <div class="col"><span class="border border-primary"></span></div>
-    <div class="col"><button class="btn btn-primary" disabled>Potvrdi</button></div>
-</div>
+    #board {
+        display: grid;
+        grid-template-columns: repeat(5, 60px);
+        gap: 5px;
+        margin-bottom: 20px;
+    }
 
-<div class="row w-50 mx-auto text-center h1 mt-5">
-    <div class="col"><span class="border border-primary"></span></div>
-    <div class="col"><span class="border border-primary"></span></div>
-    <div class="col"><span class="border border-primary"></span></div>
-    <div class="col"><span class="border border-primary"></span></div>
-    <div class="col"><span class="border border-primary"></span></div>
-    <div class="col"><button class="btn btn-primary" disabled>Potvrdi</button></div>
-</div>
+    #board div {
+        width: 60px;
+        height: 60px;
+        border: 2px solid #ccc;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 24px;
+        font-weight: bold;
+        background-color: white;
+    }
 
-<div class="row w-50 mx-auto text-center h1 mt-5">
-    <div class="col"><span class="border border-primary"></span></div>
-    <div class="col"><span class="border border-primary"></span></div>
-    <div class="col"><span class="border border-primary"></span></div>
-    <div class="col"><span class="border border-primary"></span></div>
-    <div class="col"><span class="border border-primary"></span></div>
-    <div class="col"><button class="btn btn-primary" disabled>Potvrdi</button></div>
-</div>
+    .keyboard {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
 
-<div class="row w-50 mx-auto text-center h1 mt-5">
-    <div class="col"><span class="border border-primary"></span></div>
-    <div class="col"><span class="border border-primary"></span></div>
-    <div class="col"><span class="border border-primary"></span></div>
-    <div class="col"><span class="border border-primary"></span></div>
-    <div class="col"><span class="border border-primary"></span></div>
-    <div class="col"><button class="btn btn-primary" disabled>Potvrdi</button></div>
-</div>
+    .keyboard .row {
+        display: flex;
+        justify-content: center;
+        gap: 5px;
+    }
 
-<hr class="w-50 mx-auto">
-<div class="row w-50 mx-auto text-center h1 mt-5">
-    <div class="col"><span class="border border-primary"></span></div>
-    <div class="col"><span class="border border-primary"></span></div>
-    <div class="col"><span class="border border-primary"></span></div>
-    <div class="col"><span class="border border-primary"></span></div>
-    <div class="col"><span class="border border-primary"></span></div>
-    <div class="col"><button class="btn btn-primary" style="display:none">Potvrdi</button></div>
+    .keyboard button {
+        width: 40px;
+        height: 40px;
+        border: none;
+        background-color: #ddd;
+        font-size: 18px;
+        cursor: pointer;
+    }
+
+    .keyboard button:hover {
+        background-color: #ccc;
+    }
+</style>
+<div class="game3-container">
+    <!--<p id="player-message"></p>
+    <p id="current-player" style="display: none;"></p>
+    <div id="player-message"></div>-->
+    <div id="board"></div>
+    <div class="keyboard">
+        <div class="row">
+            <button>Q</button>
+            <button>W</button>
+            <button>E</button>
+            <button>R</button>
+            <button>T</button>
+            <button>Y</button>
+            <button>U</button>
+            <button>I</button>
+            <button>O</button>
+            <button>P</button>
+        </div>
+        <div class="row">
+            <button>A</button>
+            <button>S</button>
+            <button>D</button>
+            <button>F</button>
+            <button>G</button>
+            <button>H</button>
+            <button>J</button>
+            <button>K</button>
+            <button>L</button>
+        </div>
+        <div class="row">
+            <button>Enter</button>
+            <button>Z</button>
+            <button>X</button>
+            <button>C</button>
+            <button>V</button>
+            <button>B</button>
+            <button>N</button>
+            <button>M</button>
+            <button>Delete</button>
+        </div>
+    </div>
 </div>

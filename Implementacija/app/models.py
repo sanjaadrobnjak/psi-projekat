@@ -96,7 +96,6 @@ class SkokNaMrezu(Igra, RandomSampleMixin):
             winner_score=3
         else:
             #ko je brze kliknuo
-            #PROVVERITI
             if player1_time < player2_time:
                 winner = 'blue'
                 winner_score = 3
@@ -124,6 +123,36 @@ class PaukovaSifra(Igra, RandomSampleMixin):
     class Meta:
         verbose_name = "PaukovaSifra"
         verbose_name_plural = "PaukovaSifra"
+
+    def get_feedback(self, guess):  #proverava stanje pokusaja igraca sa zadatom reci iz baze
+        rec = self.TrazenaRec.upper()
+        guess = guess.upper()
+        feedback = []
+
+        for i, letter in enumerate(guess):
+            if rec[i] == letter:
+                feedback.append("pogodjenoNaMestu")
+            elif letter in rec:
+                feedback.append("pogodjenoNijeNaMestu")
+            else:
+                feedback.append("nijePogodjeno")
+
+        return feedback
+
+    def get_score(self, attempts):
+        if attempts == 1 or attempts == 2:
+            return 20
+        elif attempts in (3, 4, 5):
+            return 15
+        elif attempts in (6, 7):
+            return 10
+        return 0
+
+    def get_player_and_score(self, player_attempts, player_guess, player_color):    #racuna osvojene poene za jednu rec tj jedan pokusaj
+        player_correct = self.get_feedback(player_guess) == ["pogodjenoNaMestu"] * len(self.TrazenaRec)
+        return player_color, self.get_score(player_attempts)
+    
+
 
 
 class Umrezavanje(Igra, RandomSampleMixin):
@@ -153,34 +182,7 @@ class Umrezavanje(Igra, RandomSampleMixin):
         verbose_name = "Umrezavanje"
         verbose_name_plural = "Umrezavanje"
 
-    def calculate_points(self, player1_answers, player2_answers):
-        #odgovori igrača su mi recnici (kljuc: postavka, vrednost: odgovor)
-        # Ucitavam odgovore iz baze
-        correct_answers = {
-            'Postavka1': self.Odgovor1,
-            'Postavka2': self.Odgovor2,
-            'Postavka3': self.Odgovor3,
-            'Postavka4': self.Odgovor4,
-            'Postavka5': self.Odgovor5,
-            'Postavka6': self.Odgovor6,
-            'Postavka7': self.Odgovor7,
-            'Postavka8': self.Odgovor8,
-            'Postavka9': self.Odgovor9,
-            'Postavka10': self.Odgovor10,
-        }
-
-        player1_score = 0
-        player2_score = 0
-
-        for postavka, odgovor in player1_answers.items():
-            if correct_answers.get(postavka) == odgovor:
-                player1_score += 3
-
-        for postavka, odgovor in player2_answers.items():
-            if correct_answers.get(postavka) == odgovor:
-                player2_score += 3
-
-        return player1_score, player2_score
+    
 
 
 class UtekniPauku(Igra, RandomSampleMixin):
