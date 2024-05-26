@@ -5,16 +5,13 @@ const timer = document.querySelector('#timer')
 let currentRow=0;
 let currentTile=0;
 
-function resetGame1UI() {
-    game1Submit.disabled = false
-    game1Answer.value = ''
-    timer.textContent = 60
-}
-
 function resetGameUI(ui) {
     switch(ui) {
         case 'game1':
-            resetGame1UI();
+            game1Submit.disabled = false
+            game1Answer.value = ''
+            timer.textContent = 60
+            console.log('reset game1 ui')
             break
     }
 }
@@ -23,7 +20,10 @@ function showGameUI(ui) {
     for (let i = 1; i <= 5; i++) {
         const currentUI = `game${i}`
         const elem = document.getElementById(currentUI)
-        elem.style.display = (ui == currentUI) ? 'block' : 'none';       
+        elem.style.display = (ui == currentUI) ? 'block' : 'none'
+        if (elem.style.display === 'block') {
+            resetGameUI(currentUI)
+        }
     }
     if (ui=='game3'){
         //document.getElementById('current-player').style.display = 'none';
