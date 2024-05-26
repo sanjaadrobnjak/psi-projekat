@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container h-100 mt-5">
+    <div class="h-100 align-items-center justify-content-center">
+        <div class="row">
+            <div class="col player1 d-flex align-items-center justify-content-center">
+                <span class="score">{{ blue_player.user.username }}: {{ blue_player_score }} </span>
+            </div>
+            <div class="col">
+                <table class="table-bordered w-100">
+                    <tr>
+                        <td> {{ blue_player_mb }} </td>
+                        <td>Mreža Brojeva</td>
+                        <td> {{ orange_player_mb }} </td>
+                    </tr>
+                    <tr>
+                        <td> {{ blue_player_snm }} </td>
+                        <td>Skok Na Mrežu</td>
+                        <td> {{ orange_player_snm }} </td>
+                    </tr>
+                    <tr>
+                        <td> {{ blue_player_ps }} </td>
+                        <td>Paukova Šifra</td>
+                        <td> {{ orange_player_ps }} </td>
+                    </tr>
+                    <tr>
+                        <td> {{ blue_player_u }} </td>
+                        <td>Umrežavanje</td>
+                        <td> {{ orange_player_u }} </td>
+                    </tr>
+                    <tr>
+                        <td> {{ blue_player_up }} </td>
+                        <td>Utekni Pauku</td>
+                        <td> {{ orange_player_up }} </td>
+                    </tr>
+                </table>
+            </div>
+            <div class="col player2 d-flex align-items-center justify-content-center">
+                <span class="score">{{ orange_player.user.username }}: {{ orange_player_score }} </span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="d-flex justify-content-center">
+    <a class="btn btn-custom fs-custom mt-5" href="{% url 'home-view' %}">Kraj okršaja</a>
+
+</div>
+
+{% endblock %}

@@ -220,12 +220,12 @@ class Okrsaj(models.Model):
     def blue_player_score(self):
         return OdigranaIgra.objects.filter(Okrsaj=self).aggregate(
             total_sum=Sum("Igrac1Poeni")
-        )["total_sum"]
+        )["total_sum"] or 0
 
     def orange_player_score(self):
         return OdigranaIgra.objects.filter(Okrsaj=self).aggregate(
             total_sum=Sum("Igrac2Poeni")
-        )["total_sum"]
+        )["total_sum"] or 0
 
 
 class OdigranaIgra(models.Model):

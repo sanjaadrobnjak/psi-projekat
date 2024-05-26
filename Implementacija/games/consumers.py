@@ -10,6 +10,7 @@ from operator import methodcaller
 from app.models import SkokNaMrezu
 from app.models import PaukovaSifra
 from django.http import JsonResponse
+from django.urls import reverse
 
 import time
 
@@ -101,7 +102,13 @@ class GameConsumer(JsonWebsocketConsumer):
             self.send_both({'type': 'update_timer', 'data': {'value': 60}})
 
         else:
-            ...#sledeca igra
+            self.send_both({
+                'type': 'redirect',
+                'pathname': reverse('game-results-view', kwargs={'game':self.game.id})
+            })
+            self.close()
+            self.opponent.close()
+            del consumers[self.game.id]
         consumers[self.game.id]['round'] = next_round
 
     def send_json_to_player(self, update_ui, player_color, is_active=True):

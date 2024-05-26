@@ -78,7 +78,7 @@ function setupWebsocketConnection() {
 
     ws.addEventListener('open', () => console.log('connected'))
     ws.addEventListener('message', msg => {
-        const {type, data, ui} = JSON.parse(msg.data)
+        const {type, data, ui, pathname} = JSON.parse(msg.data)
         console.log(type, data, ui)
         switch (type) {
         case 'update_ui':
@@ -125,6 +125,8 @@ function setupWebsocketConnection() {
                 removeGame3Listeners();//uklanja slusaoce dogadjaja kada je protivnik na potezu
             }
             break;
+        case 'redirect':
+            window.location.pathname = pathname
         }
     });
     return ws;
