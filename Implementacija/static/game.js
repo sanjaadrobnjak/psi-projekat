@@ -4,6 +4,7 @@ const timer = document.querySelector('#timer')
 
 let currentRow=0;
 let currentTile=0;
+let game1AnswerSubmitted = false
 
 function showGameUI(ui,isActive, ws) {
     for (let i = 1; i <= 5; i++) {
@@ -14,7 +15,7 @@ function showGameUI(ui,isActive, ws) {
     if (ui == 'game1') {
         game1Submit.disabled = false
         game1Answer.value = ''
-        timer.textContent = 60
+        game1AnswerSubmitted = false
     }
     if (ui=='game3'){
         //document.getElementById('current-player').style.display = 'none';
@@ -127,6 +128,7 @@ function setupWebsocketConnection() {
             break;
         case 'redirect':
             window.location.pathname = pathname
+            break
         }
     });
     return ws;
@@ -159,6 +161,7 @@ function setupGame1Listeners(ws) {
     game1Submit.onclick = (e) => {
         e.preventDefault()
         game1Submit.disabled = true;
+        game1AnswerSubmitted = true
         const msg = {
             'type': 'game1_answer',
             'answer': game1Answer.value
@@ -170,14 +173,16 @@ function setupGame1Listeners(ws) {
 }
 
 function setupTimer(ws) {
-    const timerIntervalId = setInterval(() => {
-        const timer = document.querySelector('#timer')
-        timer.textContent -= 1
-        if (parseInt(timer.textContent) == -1) {
+    setInterval(() => {
+        const timerValue = parseInt(timer.textContent)
+        if (timerValue === 0) {
+            return
+        }
+        timer.textContent = (timerValue - 1).toString()
+        if (timerValue === 1 && !game1AnswerSubmitted) {
             ws.send(JSON.stringify({
                 'type': 'time_ran_out'
             }))
-            clearInterval(timerIntervalId)
         }
     }, 1000)
 }

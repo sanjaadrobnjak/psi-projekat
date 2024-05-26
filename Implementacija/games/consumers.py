@@ -24,12 +24,13 @@ class GameConsumer(JsonWebsocketConsumer):
         game = Okrsaj.objects.get(pk=game_id)
         self.game = game
         self.answer = None
+        self.timeout = False
         username = self.scope['user'].username
         if username not in (game.Igrac1.user.username, game.Igrac2.user.username):
             return
         self.color = 'blue' if username == game.Igrac1.user.username else 'orange'
         consumers[game.id][self.color] = self
-        consumers[game.id]['round'] = 0
+        self.round_num = 0
 
         self.accept()
         if self.opponent_color in consumers[self.game.id]:
@@ -42,6 +43,14 @@ class GameConsumer(JsonWebsocketConsumer):
     @property
     def opponent(self):
         return consumers[self.game.id][self.opponent_color] 
+
+    @property
+    def round_num(self):
+        return consumers[self.game.id]['round']
+
+    @round_num.setter
+    def round_num(self, value):
+        consumers[self.game.id]['round'] = value
 
     def send_both(self, msg):
         self.send_json(msg)
@@ -67,7 +76,7 @@ class GameConsumer(JsonWebsocketConsumer):
                 'ui': 'game1'
             }
             self.send_both(update_ui)
-            self.send_both({'type': 'update_timer', 'data': {'value': 60}})
+            self.send_both({'type': 'update_timer', 'data': {'value': 20}})
         elif 3<=next_round<=12:
             next_game = OdigranaIgra.objects.get(Okrsaj=self.game, RedniBrojIgre=next_round).Igra.skoknamrezu
             update_ui={
@@ -128,7 +137,6 @@ class GameConsumer(JsonWebsocketConsumer):
         if method_name in self.PUBLIC_METHODS:
             methodcaller(method_name, content)(self)
         elif method_name=='game3_key_input':
-            print('game3_key_input')
             self.send_both({
                 'type' : 'game3_key_input',
                 'data' : content['data']
@@ -155,34 +163,48 @@ class GameConsumer(JsonWebsocketConsumer):
 
         
 
+    def game1_calculate_score(self):
+        round = OdigranaIgra.objects.get(Okrsaj=self.game, RedniBrojIgre=self.round_num)
+        mb = round.Igra.mrezabrojeva
 
-    def game1_answer(self, content):
-        round_num = consumers[self.game.id]['round']
-        round = OdigranaIgra.objects.get(Okrsaj=self.game, RedniBrojIgre=round_num)
-        mb: MrezaBrojeva = round.Igra.mrezabrojeva
+        for player in (self, self.opponent):
+            try:
+                player.answer = evaluate(player.answer, mb.nums) if player.answer is not None else 0
+            except EvaluatorError:
+                player.answer = 0
 
-        try:
-            self.answer = evaluate(content['answer'], mb.nums) # izracunaj izraz
-        except EvaluatorError:
-            self.answer = 0
+        ans1 = self.answer if self.color == 'blue' else self.opponent.answer
+        ans2 = self.answer if self.color == 'orange' else self.opponent.answer
 
-        if self.opponent.answer is None:
-            return
+        to1 = self.timeout if self.color == 'blue' else self.opponent.timeout
+        to2 = self.timeout if self.color == 'orange' else self.opponent.timeout
 
-        player1_answer = self.answer if self.color == 'blue' else self.opponent.answer
-        player2_answer = self.answer if self.color == 'orange' else self.opponent.answer
-
-        round.Igrac1Poeni, round.Igrac2Poeni = mb.get_player_points(player1_answer, player2_answer, round_num)
+        round.Igrac1Poeni, round.Igrac2Poeni = mb.get_player_points(ans1, ans2, self.round_num, to1, to2)
         round.save()
+
+    def game1_round_over(self):
+
+        self.game1_calculate_score()
+
         self.answer = None
         self.opponent.answer = None
+        self.timeout = False
+        self.opponent.timeout = False
+
         self.load_next_round()
+
+    def game1_answer(self, content):
+        self.answer = content['answer']
+        if self.opponent.answer is not None or self.opponent.timeout:
+            self.game1_round_over()
 
     def time_ran_out(self, content):
         round_num = consumers[self.game.id]['round']
         if round_num in (1, 2): # vrijeme isteklo za igru MrezaBrojeva
-            round = OdigranaIgra.objects.get(Okrsaj=self.game, RedniBrojIgre=round_num)
-            self.answer = -999
+            if self.answer is None:
+                self.timeout = True
+            if self.opponent.timeout or self.opponent.answer is not None:
+                self.game1_round_over()
         if round_num in (3,12):  
             round = OdigranaIgra.objects.get(Okrsaj=self.game, RedniBrojIgre=round_num)
             self.answer=-99999

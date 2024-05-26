@@ -68,7 +68,17 @@ class MrezaBrojeva(Igra, RandomSampleMixin):
             return 5
         return 0
 
-    def get_player_points(self, player1_answer, player2_answer, round):
+    def get_player_points(self, player1_answer, player2_answer, round, to1, to2):
+        if to1 and to2:
+            print('both timeout')
+            return 0, 0
+        if to1:
+            print('t1 timeout')
+            return 0, self._calculate_score(abs(player2_answer - self.TrazeniBroj))
+        if to2:
+            print('t2 timeout')
+            return self._calculate_score(abs(player1_answer - self.TrazeniBroj)), 0
+        print('no timeout')
         winner_color, winner_score = self.get_winner_and_score(
             player1_answer, player2_answer, round
         )

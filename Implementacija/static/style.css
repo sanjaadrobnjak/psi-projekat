@@ -95,3 +95,16 @@ button a {
     background-color: #1B6C8C;
     color: #F3EEDB;
 }
+
+.helper-number {
+    width: 60px;
+    height: 60px;
+    border: 2px solid #ccc;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px;
+    font-weight: bold;
+    background-color: white;
+    cursor: pointer;
+}
