@@ -22,29 +22,17 @@ class GameConsumer(JsonWebsocketConsumer):
         game_id = self.scope['url_route']['kwargs']['game']
         game = Okrsaj.objects.get(pk=game_id)
         self.game = game
+        self.answer = None
         username = self.scope['user'].username
-        if username != game.Igrac1.user.username and username != game.Igrac2.user.username:
+        if username not in (game.Igrac1.user.username, game.Igrac2.user.username):
             return
         self.color = 'blue' if username == game.Igrac1.user.username else 'orange'
         consumers[game.id][self.color] = self
-        consumers[game.id]['round'] = 1
-        self.answer = None
+        consumers[game.id]['round'] = 0
 
         self.accept()
-        mb = OdigranaIgra.objects.get(Okrsaj=game, RedniBrojIgre=1).Igra.mrezabrojeva
-        self.send_json({
-            'type': 'update_ui',
-            'data': {
-                'game1-helper1': mb.PomocniBroj1,
-                'game1-helper2': mb.PomocniBroj2,
-                'game1-helper3': mb.PomocniBroj3,
-                'game1-helper4': mb.PomocniBroj4,
-                'game1-helper5': mb.PomocniBroj5,
-                'game1-helper6': mb.PomocniBroj6,
-                'game1-wanted': mb.TrazeniBroj
-            },
-            'ui': 'game1'
-        })
+        if self.opponent_color in consumers[self.game.id]:
+            self.load_next_round()
 
     @property
     def opponent_color(self):
@@ -60,8 +48,8 @@ class GameConsumer(JsonWebsocketConsumer):
     
     def load_next_round(self):
         next_round = consumers[self.game.id]['round'] + 1
-        if next_round == 2:
-            mb = OdigranaIgra.objects.get(Okrsaj=self.game, RedniBrojIgre=2).Igra.mrezabrojeva
+        if 1 <= next_round <= 2:
+            mb = OdigranaIgra.objects.get(Okrsaj=self.game, RedniBrojIgre=next_round).Igra.mrezabrojeva
             update_ui = {
                 'type': 'update_ui',
                 'data': {
@@ -131,12 +119,13 @@ class GameConsumer(JsonWebsocketConsumer):
         if method_name in self.PUBLIC_METHODS:
             methodcaller(method_name, content)(self)
         elif method_name=='game3_key_input':
+            print('game3_key_input')
             self.send_both({
                 'type' : 'game3_key_input',
                 'data' : content['data']
             })
 
-    
+
     def game1_answer(self, content):
         round_num = consumers[self.game.id]['round']
         round = OdigranaIgra.objects.get(Okrsaj=self.game, RedniBrojIgre=round_num)

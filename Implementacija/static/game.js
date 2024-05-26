@@ -5,25 +5,16 @@ const timer = document.querySelector('#timer')
 let currentRow=0;
 let currentTile=0;
 
-function resetGameUI(ui) {
-    switch(ui) {
-        case 'game1':
-            game1Submit.disabled = false
-            game1Answer.value = ''
-            timer.textContent = 60
-            console.log('reset game1 ui')
-            break
-    }
-}
-
-function showGameUI(ui) {
+function showGameUI(ui,isActive, ws) {
     for (let i = 1; i <= 5; i++) {
         const currentUI = `game${i}`
         const elem = document.getElementById(currentUI)
-        elem.style.display = (ui == currentUI) ? 'block' : 'none'
-        if (elem.style.display === 'block') {
-            resetGameUI(currentUI)
-        }
+        elem.style.display = (ui == currentUI) ? 'block' : 'none';       
+    }
+    if (ui == 'game1') {
+        game1Submit.disabled = false
+        game1Answer.value = ''
+        timer.textContent = 60
     }
     if (ui=='game3'){
         //document.getElementById('current-player').style.display = 'none';
@@ -102,7 +93,7 @@ function setupWebsocketConnection() {
             }
             break
         case 'update_timer':
-            timer.textContent = data.value
+            document.querySelector('#timer').textContent = data.value
             break
         case 'guess':
             handleGuess(data);
@@ -126,7 +117,6 @@ function handleKeyInput(data) {
 }
 
 function setupGame1Listeners(ws) {
-
     game1Answer.addEventListener('keydown', e => {
         if (e.key === 'Enter') {
             game1Submit.click()
