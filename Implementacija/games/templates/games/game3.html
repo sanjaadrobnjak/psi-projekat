@@ -1,16 +1,15 @@
 <style>
-    body {
-        font-family: Arial, sans-serif;
+    body {     
         display: flex;
         justify-content: center;
         align-items: center;
-        height: 100vh;
-        margin: 0;
-        
     }
 
-    .game-container {
+    
+    
+    .game3-container {
         text-align: center;
+        margin-top: 20px; /* Adjusted to add space for the scoreboard */
     }
 
     #board {
@@ -56,11 +55,16 @@
     .keyboard button:hover {
         background-color: #ccc;
     }
+
+    #player-message{
+        font-family: "Titan One", sans-serif;
+        font-size: 25px;
+        color: #1B6C8C;
+    }
 </style>
 <div class="game3-container">
-    <!--<p id="player-message"></p>
-    <p id="current-player" style="display: none;"></p>
-    <div id="player-message"></div>-->
+    <p id="is_active" style="display: none;"></p>
+    <p id="player-message"></p>
     <div id="board"></div>
     <div class="keyboard">
         <div class="row">

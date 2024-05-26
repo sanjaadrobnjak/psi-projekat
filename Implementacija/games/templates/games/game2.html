@@ -1,3 +1,31 @@
+<style>
+    #game2-helper1{
+        font-family: "Titan One", sans-serif;
+        font-size: 25px;
+        color: #1B6C8C;
+    }
+
+    label[for="answer"] {
+            font-family: "Titan One", sans-serif; 
+            font-size: 20px; 
+            color: #1B6C8C; 
+    }
+
+    #game2-submit{
+        font-family: "Titan One", sans-serif;
+        font-weight: 400;
+        font-style: normal;
+        color: #1B6C8C;
+    }
+
+    #game2-submit:hover{
+        background-color: #1B6C8C;
+        border-color: #F2B441;
+        color: #F3EEDB;
+    }
+
+    
+</style>
 <div class="row mt-5">
     <div class="col">
         <p class="text-center" id="game2-helper1"></p>
@@ -8,6 +36,6 @@
         <label for="answer">Odgovor:</label>
         <input type="number" name="answer" id="game2-answer" required>
         <button id="game2-submit">Potvrdi</button>
-        <input type="hidden" id="answer-time" name="answer_time"> <!-- Pomerite ovaj red ispod input polja -->
+        <input type="hidden" id="answer-time" name="answer_time"> 
     </div>
 </div>

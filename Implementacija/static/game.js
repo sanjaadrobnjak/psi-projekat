@@ -24,12 +24,15 @@ function showGameUI(ui,isActive, ws) {
         });
        
         //initializeBoard();
+        let playerMessage=document.getElementById('player-message');
         
 
         if (isActive) {
+            playerMessage.textContent='Vi ste na potezu!';
             removeGame3Listeners(); //uklanja stare slusaoce dogadjaja
             setupGame3Listeners(ws);//postavlja nove slusaoce dogadjaja
         }else{
+            playerMessage.textContent='Protivnik je na potezu, sačekajte svoj red!';
             removeGame3Listeners();//uklanja slusaoce dogadjaja kada je protivnik na potezu
         }
         
@@ -96,10 +99,31 @@ function setupWebsocketConnection() {
             document.querySelector('#timer').textContent = data.value
             break
         case 'guess':
-            handleGuess(data);
+            handleGuess(data, ws);
             break;
         case 'game3_key_input':
             handleKeyInput(data);
+            break;
+        case 'end_turn_update':
+            console.log("Sedmi pokusaj je na redu");
+            const buttons = document.querySelectorAll(`#${ui} button`);
+            buttons.forEach(button => {
+                button.disabled = !data.is_active;
+            });
+        
+            
+            let playerMessage=document.getElementById('player-message');
+            
+
+            if (data.is_active) {
+                console.log("protivnicki igrac sme da upisuje");
+                playerMessage.textContent='Vi ste na potezu!';
+                removeGame3Listeners(); //uklanja stare slusaoce dogadjaja
+                setupGame3Listeners(ws);//postavlja nove slusaoce dogadjaja
+            }else{
+                playerMessage.textContent='Protivnik je na potezu, sačekajte svoj red!';
+                removeGame3Listeners();//uklanja slusaoce dogadjaja kada je protivnik na potezu
+            }
             break;
         }
     });
@@ -182,7 +206,7 @@ function setupGame2Listeners(ws) {
 
 
 
-function handleGuess(data){
+function handleGuess(data, ws){
     let feedback = data.feedback;
     let finished = data.finished;
     currentRow=data.currentRow;
@@ -220,11 +244,21 @@ function handleGuess(data){
         currentTile = 0;
         if (currentRow == 6) {
             console.log("igra je zavrsena za protivnika sa bojom "+player);
-            if (player === 'blue') {    //napraviti da bude univerzalno 
+            /*if (player === 'blue') {    //napraviti da bude univerzalno 
                 document.querySelectorAll('.keyboard button').forEach(button => button.disabled = true);
             } else {
                 document.querySelectorAll('.opponent-keyboard button').forEach(button => button.disabled = false);
-            }
+            }*/
+            document.querySelectorAll('.keyboard button').forEach(button => button.disabled = true);
+            const playerMessage = document.getElementById('player-message');
+            playerMessage.textContent = 'Protivnik je na potezu, sačekajte svoj red!';
+            ws.send(JSON.stringify({
+                type: 'end_turn',
+                player: player
+            }));
+            removeGame3Listeners(); // Uklanja slušaoce događaja nakon šestog pokušaja
+
+            
         }
         if (currentRow==7){
             setTimeout(() => {
@@ -291,7 +325,7 @@ function removeGame3Listeners() {
 }
 
 
-function handleButtonClick(event) {
+function handleButtonClick(event, ws) {
     handleInput(event.target.textContent, ws);
 }
 

@@ -108,9 +108,11 @@ class GameConsumer(JsonWebsocketConsumer):
         if player_color == 'blue':
             update_ui['data']['is_active'] = is_active
             consumers[self.game.id]['blue'].send_json(update_ui)
+            print(f'Sending to blue: {update_ui}')
         else:
             update_ui['data']['is_active'] = is_active
             consumers[self.game.id]['orange'].send_json(update_ui)
+            print(f'Sending to blue: {update_ui}')
 
     def receive_json(self, content):
         if 'type' not in content:
@@ -124,6 +126,27 @@ class GameConsumer(JsonWebsocketConsumer):
                 'type' : 'game3_key_input',
                 'data' : content['data']
             })
+        elif method_name=='end_turn':
+            self.end_turn(content)
+
+    
+    def end_turn(self, content):
+        player = content['player']
+        opponent_color = 'orange' if player == 'blue' else 'blue'
+        print(f'Ending turn for {player}, opponent is {opponent_color}')
+        end_turn_update={
+            'type': 'end_turn_update',
+            'data': {
+                'is_active': True
+            },
+            'ui': 'game3'
+        }
+        
+        self.send_json_to_player(end_turn_update, player, is_active=False)
+        self.send_json_to_player(end_turn_update, opponent_color)
+
+
+        
 
 
     def game1_answer(self, content):
@@ -191,7 +214,6 @@ class GameConsumer(JsonWebsocketConsumer):
 
     def game3_answer(self, content):
         round_num = consumers[self.game.id]['round']
-        #round = OdigranaIgra.objects.get(Okrsaj=self.game, RedniBrojIgre=round_num)
         try:
             round = OdigranaIgra.objects.get(Okrsaj=self.game, RedniBrojIgre=round_num)
         except OdigranaIgra.DoesNotExist:
@@ -201,21 +223,21 @@ class GameConsumer(JsonWebsocketConsumer):
         my_guess=content['word']
         attempts=content['attempts']
         feedback=ps.get_feedback(my_guess)
-        self.color, points=ps.get_player_and_score(attempts, my_guess, self.color)
+        #self.color, points=ps.get_player_and_score(attempts, my_guess, self.color)
         finished=feedback==["pogodjenoNaMestu"]*5
 
         active_player = 'blue' if round_num % 2 != 0 else 'orange'
         passive_player = 'orange' if active_player == 'blue' else 'blue'
+        
 
-        print(f'game3_answer: {feedback=}, {finished=}, {self.color=}, {points=}, {my_guess=}, {attempts=}') # Dodajte ovaj red za proveru
+        print(f'game3_answer: {feedback=}, {finished=}, {self.color=}, {my_guess=}, {attempts=}') # Dodajte ovaj red za proveru
 
         current_row = attempts - 1 if self.color == active_player else 6
-        last_chance=True if attempts>=6 else False
+        
         self.send_both({
             'type': 'guess',
             'data': {
                 'feedback': feedback,
-                'points': points,
                 'finished': finished,
                 'currentRow' : current_row,
                 'targetWord' : ps.TrazenaRec,
@@ -225,22 +247,45 @@ class GameConsumer(JsonWebsocketConsumer):
             'ui': 'game3'
         })
 
+        """if attempts<6:
+            if self.color=='blue':
+                self.color, round.Igrac1Poeni=ps.get_player_and_score(attempts, my_guess, self.color)
+                print(f'game3_answer: {round.Igrac1Poeni=}, {round.Igrac2Poeni=}')
+            else:
+                self.color, round.Igrac2Poeni=ps.get_player_and_score(attempts, my_guess, self.color)
+                print(f'game3_answer: {round.Igrac1Poeni=}, {round.Igrac2Poeni=}')
+        else:
+            if self.color=='blue':
+                self.color, round.Igrac1Poeni=ps.get_player_and_score(attempts, my_guess, self.color)
+                print(f'game3_answer: {round.Igrac1Poeni=}, {round.Igrac2Poeni=}')
+            else:
+                self.color, round.Igrac2Poeni=ps.get_player_and_score(attempts, my_guess, self.color)
+                print(f'game3_answer: {round.Igrac1Poeni=}, {round.Igrac2Poeni=}')"""
         
+        # Logika za proveru da li je reč pogodjena i ažuriranje stanja igre
+        #feedback, finished = ps.check_word(my_guess, self.target_word)
+        
+        if attempts < 7:
+            if self.color == 'blue':
+                round.Igrac1Poeni = ps.get_player_and_score(attempts, my_guess)
+                print(f'game3_answer: {round.Igrac1Poeni=}, {round.Igrac2Poeni=}')
+            else:
+                round.Igrac2Poeni = ps.get_player_and_score(attempts, my_guess)
+                print(f'game3_answer: {round.Igrac1Poeni=}, {round.Igrac2Poeni=}')
+        else:  # Ovo je sedmi pokušaj
+            if self.color == 'orange' and self.color==passive_player:
+                # Protivnički igrač je 'orange', njemu se dodaju poeni
+                round.Igrac2Poeni = ps.get_player_and_score(attempts, my_guess)
+                print(f'game3_answer (sedmi pokušaj): {round.Igrac1Poeni=}, {round.Igrac2Poeni=}')
+            elif self.color=='blue' and self.color==passive_player:
+                # Protivnički igrač je 'blue', njemu se dodaju poeni
+                round.Igrac1Poeni = ps.get_player_and_score(attempts, my_guess)
+                print(f'game3_answer (sedmi pokušaj): {round.Igrac1Poeni=}, {round.Igrac2Poeni=}')
+
 
         round.save()
         if finished:
             self.load_next_round()
         else:
-            if attempts >= 6:
-                self.send_json_to_player({
-                    'type': 'update_ui',
-                    'data': {'is_active': False},
-                    'ui': 'game3'
-                }, self.color)
-                self.send_json_to_player({
-                    'type': 'update_ui',
-                    'data': {'is_active': True},
-                    'ui': 'game3'
-                }, self.opponent_color)
             if attempts==7:
                 self.load_next_round()
