@@ -20,5 +20,5 @@ def evaluate(expr: str, nums: list[int]) -> int:
         raise EvaluatorError
 
 def _tokenize(expr: str) -> list[str]:
-    pattern = "(?:\d+)|\(|\)|\+|-|\*|/"
+    pattern = "(?:\\d+)|\(|\)|\+|-|\*|/"
     return re.findall(pattern, expr)
