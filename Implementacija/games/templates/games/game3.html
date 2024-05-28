@@ -3,13 +3,12 @@
         display: flex;
         justify-content: center;
         align-items: center;
+        
     }
 
-    
-    
     .game3-container {
         text-align: center;
-        margin-top: 20px; /* Adjusted to add space for the scoreboard */
+        margin-top: 20px;
     }
 
     #board {
@@ -50,13 +49,24 @@
         background-color: #ddd;
         font-size: 18px;
         cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .enter-key {
+        width: 90px !important;  /* Povećava širinu dugmeta Enter */
+    }
+
+    .delete-key {
+        width: 90px  !important; /* Povećava širinu dugmeta Delete */
     }
 
     .keyboard button:hover {
         background-color: #ccc;
     }
 
-    #player-message{
+    #player-message {
         font-family: "Titan One", sans-serif;
         font-size: 25px;
         color: #1B6C8C;
@@ -91,7 +101,7 @@
             <button>L</button>
         </div>
         <div class="row">
-            <button>Enter</button>
+            <button class="enter-key">Enter</button>
             <button>Z</button>
             <button>X</button>
             <button>C</button>
@@ -99,7 +109,7 @@
             <button>B</button>
             <button>N</button>
             <button>M</button>
-            <button>Delete</button>
+            <button class="delete-key">Delete</button>
         </div>
     </div>
 </div>

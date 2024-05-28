@@ -106,22 +106,19 @@ class SkokNaMrezu(Igra, RandomSampleMixin):
         verbose_name = "SkokNaMrezu"
         verbose_name_plural = "SkokNaMrezu"
 
-    def get_winner_and_score(
-        self, player1_answer, player2_answer, round, player1_time, player2_time
-    ):
+    def get_winner_and_score(self, player1_answer, player2_answer, player1_time, player2_time):
         player1_answer = int(player1_answer)
         player2_answer = int(player2_answer)
+        if (player1_answer==0 and player2_answer==0):
+            return None, 0
         player1_diff = abs(player1_answer - self.Odgovor)
         player2_diff = abs(player2_answer - self.Odgovor)
         winner_score = 0
 
-        if player1_diff != player2_diff:
-            # pobednik je ko je blizi odgovoru
+        if player1_diff != player2_diff:    # pobednik je ko je blizi odgovoru
             winner = "blue" if player1_diff < player2_diff else "orange"
             winner_score = 3
-        else:
-            # ko je brze kliknuo
-            # PROVVERITI
+        else:   # ko je brze kliknuo
             if player1_time < player2_time:
                 winner = "blue"
                 winner_score = 3
@@ -134,11 +131,21 @@ class SkokNaMrezu(Igra, RandomSampleMixin):
 
         return winner, winner_score
 
-    def get_player_points(
-        self, player1_answer, player2_answer, round, player1_time, player2_time
-    ):
+    def get_player_points(self, player1_answer, player2_answer, player1_time, player2_time, to1, to2):
+        if to1 and to2:
+            print('both timeout')
+            return 0, 0
+        if to1:
+            if player2_answer!=0:
+                return 0, 3
+            return 0,0
+        if to2:
+            if player1_answer!=0:
+                return 3, 0
+            return 0, 0
+    
         winner_color, winner_score = self.get_winner_and_score(
-            player1_answer, player2_answer, round, player1_time, player2_time
+            player1_answer, player2_answer, player1_time, player2_time
         )
         if winner_color == "blue":
             return winner_score, 0

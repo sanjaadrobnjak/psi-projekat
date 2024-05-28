@@ -31,6 +31,9 @@ class GameConsumer(JsonWebsocketConsumer):
         self.color = 'blue' if username == game.Igrac1.user.username else 'orange'
         consumers[game.id][self.color] = self
         self.round_num = 0
+        self.answer_time=0
+        self.attempts=0
+        self.my_guess=None
 
         self.accept()
         if self.opponent_color in consumers[self.game.id]:
@@ -142,26 +145,20 @@ class GameConsumer(JsonWebsocketConsumer):
                 'data' : content['data']
             })
         elif method_name=='end_turn':
-            self.end_turn(content)
-
-    
-    def end_turn(self, content):
-        player = content['player']
-        opponent_color = 'orange' if player == 'blue' else 'blue'
-        print(f'Ending turn for {player}, opponent is {opponent_color}')
-        end_turn_update={
-            'type': 'end_turn_update',
-            'data': {
-                'is_active': True
-            },
-            'ui': 'game3'
-        }
-        
-        self.send_json_to_player(end_turn_update, player, is_active=False)
-        self.send_json_to_player(end_turn_update, opponent_color)
-
-
-        
+            player = content['player']
+            opponent_color = 'orange' if player == 'blue' else 'blue'
+            print(f'Ending turn for {player}, opponent is {opponent_color}')
+            end_turn_update={
+                'type': 'end_turn_update',
+                'data': {
+                    'is_active': True
+                },
+                'ui': 'game3'
+            }
+            
+            self.send_json_to_player(end_turn_update, player, is_active=False)
+            self.send_json_to_player(end_turn_update, opponent_color)
+       
 
     def game1_calculate_score(self):
         round = OdigranaIgra.objects.get(Okrsaj=self.game, RedniBrojIgre=self.round_num)
@@ -205,43 +202,109 @@ class GameConsumer(JsonWebsocketConsumer):
                 self.timeout = True
             if self.opponent.timeout or self.opponent.answer is not None:
                 self.game1_round_over()
-        if round_num in (3,12):  
-            round = OdigranaIgra.objects.get(Okrsaj=self.game, RedniBrojIgre=round_num)
-            self.answer=-99999
-        if round_num in (13,14):  
-            round = OdigranaIgra.objects.get(Okrsaj=self.game, RedniBrojIgre=round_num)
-            self.answer=-99999
+        if 3<=round_num<=12:  
+            if self.answer is None:
+                self.timeout = True
+            if self.opponent.timeout or self.opponent.answer is not None:
+                self.game2_round_over()
+        if 13<=round_num<=14:  
+            self.timeout=True
+            self.game3_round_over()
 
+    def game2_calculate_score(self):
+        round = OdigranaIgra.objects.get(Okrsaj=self.game, RedniBrojIgre=self.round_num)
+        snm=round.Igra.skoknamrezu
+        player1_answer = self.answer if self.color == 'blue' else self.opponent.answer
+        player2_answer = self.answer if self.color == 'orange' else self.opponent.answer
+
+        player1_time = self.answer_time if self.color == 'blue' else self.opponent.answer_time
+        player2_time = self.answer_time if self.color == 'orange' else self.opponent.answer_time
+
+        to1 = self.timeout if self.color == 'blue' else self.opponent.timeout
+        to2 = self.timeout if self.color == 'orange' else self.opponent.timeout
+
+        print(f'game2_answer: {player1_answer=}, {player2_answer=}, {player1_time=}, {player2_time=},{to1=}, {to2=}')
+
+        round.Igrac1Poeni, round.Igrac2Poeni=snm.get_player_points(player1_answer, player2_answer, player1_time, player2_time, to1, to2)
+        round.save()
+
+    def game2_round_over(self):
+        self.game2_calculate_score()
+        self.answer = None
+        self.answer_time=0
+        self.opponent.answer = None
+        self.timeout = False
+        self.opponent.timeout = False
+        self.load_next_round()
 
     def game2_answer(self, content):
+        # Proveravamo odgovor i ako je prazan, postavljamo ga na 0
+        self.answer = content['answer'] if content['answer'] else 0
+        self.answer_time=content['answer_time']
+
+        
+        print(f'game2_answer:{self.opponent.answer=},{self.opponent.timeout=}')
+        if self.opponent.answer is not None or self.opponent.timeout:
+            self.game2_round_over()
+
+    def game3_round_over(self):
         round_num = consumers[self.game.id]['round']
         try:
             round = OdigranaIgra.objects.get(Okrsaj=self.game, RedniBrojIgre=round_num)
         except OdigranaIgra.DoesNotExist:
             print(f"OdigranaIgra with Okrsaj={self.game.id} and RedniBrojIgre={round_num} does not exist.")
             return
-        snm: SkokNaMrezu=round.Igra.skoknamrezu
-        self.answer=content['answer']
-        answer_time=content['answer_time']
 
-        print(f'game2_answer: {self.answer=}, {self.opponent.answer=}')
-        if self.opponent.answer is None:
-            self.answer_time=answer_time
-            return
+        ps: PaukovaSifra = round.Igra.paukovasifra
 
-        player1_answer = self.answer if self.color == 'blue' else self.opponent.answer
-        player2_answer = self.answer if self.color == 'orange' else self.opponent.answer
+        if self.timeout:
+            my_guess = ''
+            attempts = 7
+            feedback = [""] * 5  # prazna povratna informacija jer nije bilo stvarnog pokušaja
+            finished = False
+        else:
+            my_guess = self.my_guess
+            attempts = self.attempts
+            feedback = ps.get_feedback(my_guess)
+            finished = feedback == ["pogodjenoNaMestu"] * 5
 
-        player1_time = answer_time if self.color == 'blue' else self.opponent.answer_time
-        player2_time = answer_time if self.color == 'orange' else self.opponent.answer_time
+        active_player = 'blue' if round_num % 2 != 0 else 'orange'
+        passive_player = 'orange' if active_player == 'blue' else 'blue'
 
-        round.Igrac1Poeni, round.Igrac2Poeni=snm.get_player_points(player1_answer, player2_answer, round_num, player1_time, player2_time)
+        current_row = attempts - 1 if self.color == active_player else 6
+
+        self.send_both({
+            'type': 'guess',
+            'data': {
+                'feedback': feedback,
+                'finished': finished,
+                'currentRow': current_row,
+                'targetWord': ps.TrazenaRec,
+                'player': self.color
+            },
+            'ui': 'game3'
+        })
+
+        if attempts < 7:
+            if self.color == 'blue':
+                round.Igrac1Poeni = ps.get_player_and_score(attempts, my_guess)
+            else:
+                round.Igrac2Poeni = ps.get_player_and_score(attempts, my_guess)
+        else:
+            if self.color == 'orange' and self.color == passive_player:
+                round.Igrac2Poeni = ps.get_player_and_score(attempts, my_guess)
+            elif self.color == 'blue' and self.color == passive_player:
+                round.Igrac1Poeni = ps.get_player_and_score(attempts, my_guess)
+
         round.save()
-        self.answer = None
-        self.opponent.answer = None
         self.load_next_round()
 
+
     def game3_answer(self, content):
+        
+        self.my_guess=content['word']
+        self.attempts=content['attempts']
+        
         round_num = consumers[self.game.id]['round']
         try:
             round = OdigranaIgra.objects.get(Okrsaj=self.game, RedniBrojIgre=round_num)
@@ -249,9 +312,7 @@ class GameConsumer(JsonWebsocketConsumer):
             print(f"OdigranaIgra with Okrsaj={self.game.id} and RedniBrojIgre={round_num} does not exist.")
             return
         ps: PaukovaSifra = round.Igra.paukovasifra
-        my_guess=content['word']
-        attempts=content['attempts']
-        feedback=ps.get_feedback(my_guess)
+        feedback=ps.get_feedback(self.my_guess)
         #self.color, points=ps.get_player_and_score(attempts, my_guess, self.color)
         finished=feedback==["pogodjenoNaMestu"]*5
 
@@ -259,9 +320,9 @@ class GameConsumer(JsonWebsocketConsumer):
         passive_player = 'orange' if active_player == 'blue' else 'blue'
         
 
-        print(f'game3_answer: {feedback=}, {finished=}, {self.color=}, {my_guess=}, {attempts=}') # Dodajte ovaj red za proveru
+        print(f'game3_answer: {feedback=}, {finished=}, {self.color=}, {self.my_guess=}, {self.attempts=}') # Dodat red za proveru
 
-        current_row = attempts - 1 if self.color == active_player else 6
+        current_row = self.attempts - 1 if self.color == active_player else 6
         
         self.send_both({
             'type': 'guess',
@@ -275,46 +336,28 @@ class GameConsumer(JsonWebsocketConsumer):
             },
             'ui': 'game3'
         })
-
-        """if attempts<6:
-            if self.color=='blue':
-                self.color, round.Igrac1Poeni=ps.get_player_and_score(attempts, my_guess, self.color)
-                print(f'game3_answer: {round.Igrac1Poeni=}, {round.Igrac2Poeni=}')
-            else:
-                self.color, round.Igrac2Poeni=ps.get_player_and_score(attempts, my_guess, self.color)
-                print(f'game3_answer: {round.Igrac1Poeni=}, {round.Igrac2Poeni=}')
-        else:
-            if self.color=='blue':
-                self.color, round.Igrac1Poeni=ps.get_player_and_score(attempts, my_guess, self.color)
-                print(f'game3_answer: {round.Igrac1Poeni=}, {round.Igrac2Poeni=}')
-            else:
-                self.color, round.Igrac2Poeni=ps.get_player_and_score(attempts, my_guess, self.color)
-                print(f'game3_answer: {round.Igrac1Poeni=}, {round.Igrac2Poeni=}')"""
         
-        # Logika za proveru da li je reč pogodjena i ažuriranje stanja igre
-        #feedback, finished = ps.check_word(my_guess, self.target_word)
-        
-        if attempts < 7:
+        if self.attempts < 7:
             if self.color == 'blue':
-                round.Igrac1Poeni = ps.get_player_and_score(attempts, my_guess)
+                round.Igrac1Poeni = ps.get_player_and_score(self.attempts, self.my_guess)
                 print(f'game3_answer: {round.Igrac1Poeni=}, {round.Igrac2Poeni=}')
             else:
-                round.Igrac2Poeni = ps.get_player_and_score(attempts, my_guess)
+                round.Igrac2Poeni = ps.get_player_and_score(self.attempts, self.my_guess)
                 print(f'game3_answer: {round.Igrac1Poeni=}, {round.Igrac2Poeni=}')
         else:  # Ovo je sedmi pokušaj
             if self.color == 'orange' and self.color==passive_player:
                 # Protivnički igrač je 'orange', njemu se dodaju poeni
-                round.Igrac2Poeni = ps.get_player_and_score(attempts, my_guess)
+                round.Igrac2Poeni = ps.get_player_and_score(self.attempts, self.my_guess)
                 print(f'game3_answer (sedmi pokušaj): {round.Igrac1Poeni=}, {round.Igrac2Poeni=}')
             elif self.color=='blue' and self.color==passive_player:
                 # Protivnički igrač je 'blue', njemu se dodaju poeni
-                round.Igrac1Poeni = ps.get_player_and_score(attempts, my_guess)
+                round.Igrac1Poeni = ps.get_player_and_score(self.attempts, self.my_guess)
                 print(f'game3_answer (sedmi pokušaj): {round.Igrac1Poeni=}, {round.Igrac2Poeni=}')
 
 
         round.save()
-        if finished:
+        if finished or self.attempts==7:
+            #self.game3_round_over()
             self.load_next_round()
-        else:
-            if attempts==7:
-                self.load_next_round()
+
+        
