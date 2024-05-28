@@ -5,6 +5,8 @@ const timer = document.querySelector('#timer')
 let currentRow=0;
 let currentTile=0;
 let game1AnswerSubmitted = false
+let game2AnswerSubmitted=false;
+let game3AnswerSubmitted=false;
 
 function showGameUI(ui,isActive, ws) {
     for (let i = 1; i <= 5; i++) {
@@ -17,7 +19,11 @@ function showGameUI(ui,isActive, ws) {
         game1Answer.value = ''
         game1AnswerSubmitted = false
     }
+    if(ui=='game2'){
+        game2AnswerSubmitted=false;
+    }
     if (ui=='game3'){
+        game3AnswerSubmitted=false;
         //document.getElementById('current-player').style.display = 'none';
         const buttons = document.querySelectorAll(`#${ui} button`);
         buttons.forEach(button => {
@@ -184,6 +190,18 @@ function setupTimer(ws) {
                 'type': 'time_ran_out'
             }))
         }
+        if(timerValue==1 && !game2AnswerSubmitted){
+            console.log("saljem poruku da je isteklo vreme za drugu igru");
+            ws.send(JSON.stringify({
+                'type':'time_ran_out'
+            }))
+        }
+        if(timerValue==1 && !game3AnswerSubmitted){
+            console.log("saljem poruku da je isteklo vreme za trecu igru");
+            ws.send(JSON.stringify({
+                'type':'time_ran_out'
+            }))
+        }
     }, 1000)
 }
 
@@ -195,7 +213,9 @@ function setupGame2Listeners(ws) {
     }
 
     document.querySelector('#game2-submit').onclick = (e) => {
-        e.preventDefault()
+        e.preventDefault();
+        game2AnswerSubmitted=true;
+        console.log("game2AnswerSubmitted "+game2AnswerSubmitted);
 
         let answerTime=new Date().getTime();
         let answerTimeDiv = document.getElementById('answer-time');
@@ -292,20 +312,6 @@ function resetBoard() {
     currentTile = 0
 }
 
-/*function setupGame3Listeners(ws){
-    document.querySelectorAll('.keyboard button').forEach(button => {
-        button.addEventListener('click', (event) => handleInput(event.target.textContent, ws));
-    });
-    document.addEventListener('keydown', (event)=>handleKeyDown(event, ws));
-}
-
-function removeGame3Listeners() {
-    document.querySelectorAll('.keyboard button').forEach(button => {
-        button.removeEventListener('click', handleButtonClick);
-    });
-
-    document.removeEventListener('keydown', handleKeyDown);
-}*/
 
 let handleButtonClickReference = null;
 let handleKeyDownReference = null;
@@ -339,6 +345,7 @@ function handleButtonClick(event, ws) {
 function handleKeyDown(event, ws){  
     const key = event.key.toUpperCase();
     if (key === 'ENTER') {
+        if (currentRow==6) game3AnswerSubmitted=true;
         handleInput('Enter', ws);
     } else if (key === 'BACKSPACE') {
         handleInput('Delete', ws);
@@ -416,7 +423,7 @@ function main() {
     setupTimer(ws);
     setupGame1Listeners(ws);
     setupGame2Listeners(ws);
-    //setupGame3Listeners(ws);
+    
     if (document.getElementById('game3').style.display === 'block') {
         setupGame3Listeners(ws);
         initializeBoard();
