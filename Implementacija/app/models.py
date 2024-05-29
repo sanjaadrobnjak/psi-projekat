@@ -1,3 +1,8 @@
+"""
+    Ivan Cancar 2021/0604,
+    Sanja Drobnjak 2021/0492
+"""
+
 from django.contrib.auth.models import User
 from django.db import models
 from django.db.models import Sum
@@ -98,6 +103,10 @@ class MrezaBrojeva(Igra, RandomSampleMixin):
         ]
 
 
+"""
+    ova klasa predstavlja model igre Skok Na Mrezu i nasledjuje funkcionalnosti iz klasa Igra i RandomSampleMixin;
+    polja klase Postavka i Odgovor su tekstualno i celobrojno polje koje predstavljaju postavku igre i tacan odgovor za postavku igre, respektivno 
+"""
 class SkokNaMrezu(Igra, RandomSampleMixin):
     Postavka = models.TextField()
     Odgovor = models.IntegerField()
@@ -106,6 +115,10 @@ class SkokNaMrezu(Igra, RandomSampleMixin):
         verbose_name = "SkokNaMrezu"
         verbose_name_plural = "SkokNaMrezu"
 
+    """
+        odredjuje pobednika igre i vraca njegov rezultat na osnovu odgovora oba igraca i vremena kad asu pritisnuli dugme za potvrdu;
+        metoda vraca tuple (winner, winner_score), gde je winner boja pobednika a winner_score rezultat
+    """
     def get_winner_and_score(self, player1_answer, player2_answer, player1_time, player2_time):
         player1_answer = int(player1_answer)
         player2_answer = int(player2_answer)
@@ -131,6 +144,11 @@ class SkokNaMrezu(Igra, RandomSampleMixin):
 
         return winner, winner_score
 
+    """
+        odredjuje poene oba igraca na osnovu njih odgovora, vremena kada su pritisnuli dugme za potvrdu i informacije da li im je isteklo vreme pre nego sto su pritisnuli dugme za potvrdu,
+        (ukoliko je igracu automatski osvaja 0 poena, dok u drugim slucajevima se poziva metoda get_winner_and_score za odredjivanje osvojenih poena za svakog igraca);
+        metoda vraca tuple (player1_points, player2_points) koji predstavlja osvojene poene prvoog i drugog igraca
+    """
     def get_player_points(self, player1_answer, player2_answer, player1_time, player2_time, to1, to2):
         if to1 and to2:
             print('both timeout')
@@ -152,6 +170,10 @@ class SkokNaMrezu(Igra, RandomSampleMixin):
         return 0, winner_score
 
 
+"""
+    ova klasa predstavlja model igre Paukova Sifra i nasledjuje osnovne funkcionalnosti iz klsa Igra i RandomSampleMixin;
+    polje klase TrazenaRec predstavlja tekstualno polje za rec koju igraci treba da pogode
+"""
 class PaukovaSifra(Igra, RandomSampleMixin):
     TrazenaRec = models.CharField(max_length=20)
 
@@ -159,6 +181,12 @@ class PaukovaSifra(Igra, RandomSampleMixin):
         verbose_name = "PaukovaSifra"
         verbose_name_plural = "PaukovaSifra"
 
+
+    """
+        proverava pokusaj igraca (ulazni parametar guess) u odnosu na zadatu rec,
+        tako sto poredi svaki karakter u pokusaju sa odgovarajucim karakterom u trazenoj reci;
+        kao rezultat vraca povratnu informaciju o tacnosti svakog slova u pokusaju
+    """
     def get_feedback(self, guess):  #proverava stanje pokusaja igraca sa zadatom reci iz baze
         rec = self.TrazenaRec.upper()
         guess = guess.upper()
@@ -174,6 +202,10 @@ class PaukovaSifra(Igra, RandomSampleMixin):
 
         return feedback
 
+    """
+        odredjuje broj poena na osnovu broja pokusaja (ulazni parametar attempts) potrebnih da se pogodi rec;
+        kao rezultat vraca odgovarajuci broj poena u zavisnosti od broja pokusaja
+    """
     def get_score(self, attempts):
         if attempts == 1 or attempts == 2:
             return 20
@@ -183,6 +215,11 @@ class PaukovaSifra(Igra, RandomSampleMixin):
             return 10
         return 0
 
+    """
+        racuna osvojene poene za jednog igraca na osnovu njegovih pokusaja zadate reci,
+        ukoliko je pokusaj tacan, kao rezultat metoda vraca broj poena na osnovu broja pokusaja pozivanjem metode get_score,
+        inace kao rezultat vraca nulu
+    """
     def get_player_and_score(self, player_attempts, player_guess):    #racuna osvojene poene za jednu rec tj jedan pokusaj
         player_correct = self.get_feedback(player_guess) == ["pogodjenoNaMestu"] * 5
         if(player_correct==False):

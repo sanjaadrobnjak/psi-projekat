@@ -1,3 +1,8 @@
+"""
+    Ivan Cancar 2021/0604,
+    Sanja Drobnjak 2021/0492
+"""
+
 from app.models import MrezaBrojeva
 from app.models import OdigranaIgra
 from app.models import Okrsaj
@@ -31,9 +36,9 @@ class GameConsumer(JsonWebsocketConsumer):
         self.color = 'blue' if username == game.Igrac1.user.username else 'orange'
         consumers[game.id][self.color] = self
         self.round_num = 0
-        self.answer_time=0
-        self.attempts=0
-        self.my_guess=None
+        self.answer_time=0      #za drugu igru
+        self.attempts=0         #za trecu igru
+        self.my_guess=None      #za trecu igru
 
         self.accept()
         if self.opponent_color in consumers[self.game.id]:
@@ -58,7 +63,26 @@ class GameConsumer(JsonWebsocketConsumer):
     def send_both(self, msg):
         self.send_json(msg)
         self.opponent.send_json(msg)
+
     
+    """
+        omogucava pravilno upravljanje prelaskom izmedju rundi, azuriranje korisnickog 
+        interfejsa i tajmera, kao i rukovanje zavrsetkom  tako sto se izracuna broj sledece 
+        runde, i onda ako je:
+        ♥ broj runde 1 ili 2, dohvataju se podaci za igru Mreza Brojeva, azurira se 
+        korisnicki interfejs sa podacima o pomocnim brojevima i trazenom broju, azuriraju 
+        se osvojeni poeni za oba igraca i ti azurirani podaci se salju klijentima, takodje, 
+        postavlja se tajmer
+        ♥broj runde u opsegu [3,12], dohvataju se podaci za igru Skok Na Mrezu, azurira se 
+        korisnicki interfejs sa postavkom igre i osvojenim poenima za oba igraca i ti azurirani
+        podaci se salju klijentima nakon cega se postavlja tajmer
+        ♥broj runde je 13 ili 14, dohvataju se podaci za igru Paukova Sira, odredjuje se aktivni igrac, 
+        tj igrac koji je na potezu, kao i pasivni igrac-igrac koji ceka da dodje na red, azurira se 
+        korisnicki interfejs i salju se podaci aktivnom i pasivnom igracu, takodje postavlja se tajmer
+        ♥ukoliko je broj runde van opsega, salje se klijentima poruka za preusmeravanje na stranicu sa 
+        rezultatima, zatvara se WebSocket konekcija za oba igraca
+        I na kraju, bez obzira na broj runde, broj trenutne runde se azurira na sledeci broj runde
+    """
     def load_next_round(self):
         next_round = consumers[self.game.id]['round'] + 1
         if 1 <= next_round <= 2:
@@ -111,7 +135,7 @@ class GameConsumer(JsonWebsocketConsumer):
             self.send_json_to_player(update_ui, active_player)
             self.send_json_to_player(update_ui, passive_player, is_active=False)
             #self.send_both(update_ui)
-            self.send_both({'type': 'update_timer', 'data': {'value': 60}})
+            self.send_both({'type': 'update_timer', 'data': {'value': 10}})
 
         else:
             self.send_both({
@@ -123,6 +147,12 @@ class GameConsumer(JsonWebsocketConsumer):
             del consumers[self.game.id]
         consumers[self.game.id]['round'] = next_round
 
+
+    """
+        koristi se za slanje azuriranja interfejsa odredjenom igracu putem WebSocket-a u trecoj igri Paukova Sifra,
+        tako sto postavlja informaciju o tome da li je igrac aktivan pre slanja poruke;
+        kao ulazne parametre prima JSON objekat koji sadrzi podatke za azuriranje korisnickog interfejsa, player-color tj boju igraca kojem se salje poruka i is_active koja odredjuje da li je igrac aktivan 
+    """
     def send_json_to_player(self, update_ui, player_color, is_active=True):
         if player_color == 'blue':
             update_ui['data']['is_active'] = is_active
@@ -133,6 +163,14 @@ class GameConsumer(JsonWebsocketConsumer):
             consumers[self.game.id]['orange'].send_json(update_ui)
             print(f'Sending to blue: {update_ui}')
 
+
+    """
+        rukuje primljenim JSON porukama od klijenta;
+        kao ulazni parametar prima JSON objekat koji sadrzi podatke primljene od klijenta 
+        tako sto na osnovu tipa poruke poziva odgovarajuce metode (game1_answer, game2_answer, game3_answer, time_ran_out) sa content kao argumentom
+        ili salje poruku obojici igraca sa odgovarajucim podacima putem WebSocket-a ukoliko je tip poruke game3_key_input ili
+        ako je tip poruke end_turn gde igracima u trecoj igri obrce aktivnog i pasivnog igraca, odnosno igrac koji je do sada bio aktivan onemogucava mu se dalji unos, dok se drugom igracu omogucava
+    """
     def receive_json(self, content):
         if 'type' not in content:
             return
@@ -195,6 +233,13 @@ class GameConsumer(JsonWebsocketConsumer):
         if self.opponent.answer is not None or self.opponent.timeout:
             self.game1_round_over()
 
+
+    """
+        rukuje situacijom kada istekne vreme u rundi, 
+        tako sto postavlja promenljivu timeout na True za trenutnog igraca ako nije dao odgovor;
+        ukoliko je protivniku vec isteklo vreme ili je dao odgovor poziva se odgovarajuca funkcija 
+        (game1_round_over, game2_round_over, game3_round_over) da zavrsi trenutnu rundu igre
+    """
     def time_ran_out(self, content):
         round_num = consumers[self.game.id]['round']
         if round_num in (1, 2): # vrijeme isteklo za igru MrezaBrojeva
@@ -211,7 +256,13 @@ class GameConsumer(JsonWebsocketConsumer):
             self.timeout=True
             self.game3_round_over()
 
-    def game2_calculate_score(self):
+
+    """
+        zavrsava trenutnu rundu igre Skok Na Mrezu 
+        tako sto racuna poene za oba igraca na osnovu njihovih odgovora, vremena odgovora i informacije da li im je isteklo vreme ili ne
+        i resetuje odgovore i informaciju da li im je isteklo vreme ili ne i ucitava sledecu rundu
+    """
+    def game2_round_over(self):
         round = OdigranaIgra.objects.get(Okrsaj=self.game, RedniBrojIgre=self.round_num)
         snm=round.Igra.skoknamrezu
         player1_answer = self.answer if self.color == 'blue' else self.opponent.answer
@@ -227,9 +278,6 @@ class GameConsumer(JsonWebsocketConsumer):
 
         round.Igrac1Poeni, round.Igrac2Poeni=snm.get_player_points(player1_answer, player2_answer, player1_time, player2_time, to1, to2)
         round.save()
-
-    def game2_round_over(self):
-        self.game2_calculate_score()
         self.answer = None
         self.answer_time=0
         self.opponent.answer = None
@@ -237,8 +285,13 @@ class GameConsumer(JsonWebsocketConsumer):
         self.opponent.timeout = False
         self.load_next_round()
 
+    """
+        prima odgovor i vreme odgovora igraca 
+        i proverava da li je protivnik vec poslao odgovor ili je isteklo vreme pre nego sto je pritisnuo dugme za potvrdu 
+        i ukoliko jeste, poziva game2_round_over za zavrsetak runde
+    """
     def game2_answer(self, content):
-        # Proveravamo odgovor i ako je prazan, postavljamo ga na 0
+        #proveravam odgovor i ako je prazan, postavljam ga na 0
         self.answer = content['answer'] if content['answer'] else 0
         self.answer_time=content['answer_time']
 
@@ -247,6 +300,13 @@ class GameConsumer(JsonWebsocketConsumer):
         if self.opponent.answer is not None or self.opponent.timeout:
             self.game2_round_over()
 
+
+    """
+        zavrsava trenutnu rundu igre Paukova Sifra
+        tako sto proverava da li je igracu isteklo vreme pre nego sto je iskoristio sve pokusaje i ukoliko jeste
+        postavlja povratne informacije kao da je runda zavrsena (ako igracu nije isteklo vreme podtsvlja povratne informacije na osnovu odgovora igraca)
+        i azurira poene na osnovu odgovora igraca, salje informacije o rundi obojici igraca, resetuje status runde i ucitava sledecu rundu
+    """
     def game3_round_over(self):
         round_num = consumers[self.game.id]['round']
         try:
@@ -300,6 +360,14 @@ class GameConsumer(JsonWebsocketConsumer):
         self.load_next_round()
 
 
+    """
+        funkcija obradjuje odgovor igraca u trecoj igri Paukova Sifra, 
+        tako sto najpre cuva rec koju je igrac pogodio kao i broj pokusaja iz poruke klijenta, 
+        dohvata potrebne informacije o rundi iz objekta OdigranaIgra kao i informacije da li je igac pogodio zadatu rec pomocu objekta PaukovaSifra;
+        zatim salje poruku klijentima, koja sadrzi povratne informacije o tacnosti reci koju je korisnik uneo, da li je runda gotova, trenutnom redu, zadatoj reci,igracu koji je na potezu;
+        nakon toga se azuriraju poeni igracu koji je na potezu u zavisnosti tacnosti reci koju je uneo;
+        i na kraju se cuva stanje i prelazi na sledecu rundu ukoliko su iskorisceni svi pokusaji ili ukoliko je zadata  rec pogodjena
+    """
     def game3_answer(self, content):
         
         self.my_guess=content['word']
@@ -344,15 +412,15 @@ class GameConsumer(JsonWebsocketConsumer):
             else:
                 round.Igrac2Poeni = ps.get_player_and_score(self.attempts, self.my_guess)
                 print(f'game3_answer: {round.Igrac1Poeni=}, {round.Igrac2Poeni=}')
-        else:  # Ovo je sedmi pokušaj
+        else:  # Ovo je sedmi pokusaj
             if self.color == 'orange' and self.color==passive_player:
-                # Protivnički igrač je 'orange', njemu se dodaju poeni
+                # Protivnicki igrac je 'orange', njemu se dodaju poeni
                 round.Igrac2Poeni = ps.get_player_and_score(self.attempts, self.my_guess)
-                print(f'game3_answer (sedmi pokušaj): {round.Igrac1Poeni=}, {round.Igrac2Poeni=}')
+                print(f'game3_answer (sedmi pokusaj): {round.Igrac1Poeni=}, {round.Igrac2Poeni=}')
             elif self.color=='blue' and self.color==passive_player:
-                # Protivnički igrač je 'blue', njemu se dodaju poeni
+                # Protivnicki igrac je 'blue', njemu se dodaju poeni
                 round.Igrac1Poeni = ps.get_player_and_score(self.attempts, self.my_guess)
-                print(f'game3_answer (sedmi pokušaj): {round.Igrac1Poeni=}, {round.Igrac2Poeni=}')
+                print(f'game3_answer (sedmi pokusaj): {round.Igrac1Poeni=}, {round.Igrac2Poeni=}')
 
 
         round.save()
