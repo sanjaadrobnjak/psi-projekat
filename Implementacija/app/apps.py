@@ -1,3 +1,6 @@
+"""
+    Ivan Cancar 2021/0604
+"""
 from django.apps import AppConfig
 
 

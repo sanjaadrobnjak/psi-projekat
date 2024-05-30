@@ -1,4 +1,5 @@
 channels
 daphne
 django
+docutils
 mysqlclient

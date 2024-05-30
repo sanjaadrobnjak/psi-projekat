@@ -1,3 +1,6 @@
+"""
+    Ivan Cancar 2021/0604
+"""
 from app.models import OdigranaIgra
 from app.models import Okrsaj
 from django.contrib.auth.decorators import login_required
@@ -9,6 +12,9 @@ from django.views import View
 
 
 class GameView(View):
+    """\
+    Dohvata stranicu sa kodom za igranje okrsaja sa id-om = game
+    """
     @method_decorator(login_required)
     def get(self, request, game):
         game = Okrsaj.objects.get(pk=game)
@@ -22,6 +28,9 @@ class GameView(View):
         })
 
 class GameResultsView(View):
+    """\
+    Dohvata rezultate odigranog okrsaja sa id-om = game
+    """
     def _player_score(self, game, rounds):
         s = OdigranaIgra.objects.filter(Okrsaj=game, RedniBrojIgre__in=rounds).aggregate(
             blue_sum=Sum('Igrac1Poeni'),
