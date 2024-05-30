@@ -1,5 +1,7 @@
 channels
 daphne
 django
+django-extensions
 docutils
 mysqlclient
+pydot
