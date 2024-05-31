@@ -2,6 +2,7 @@
     Ivan Cancar 2021/0604,
     Sanja Drobnjak 2021/0492
     Luka Skoko 2021/0497
+    Tanja Kvascev 2021/0031
 */ 
 
 const game1Submit = document.querySelector('#game1-submit')
@@ -10,10 +11,15 @@ const timer = document.querySelector('#timer')
 
 let currentRow=0;           //koristi se u trecoj igri, Paukova Sifra
 let currentTile=0;          //koristi se u trecoj igri, Paukova sifra
+
+let errors = 0;             //koristi se u petoj igri, Utekni pauku
+const display_guessed_div = document.getElementById('display_guessed'); //koristi se u petoj igri, Utekni pauku
+
 let game1AnswerSubmitted = false
 let game2AnswerSubmitted=false;
 let game3AnswerSubmitted=false;
 let game4AnswerSubmitted=false;
+let game5AnswerSubmitted=false;
 
 /*
     prikazuje interfejs igre tako sto iterira kroz pet potencijalnih igara
@@ -76,10 +82,30 @@ function showGameUI(ui,isActive, ws) {
             removeGame4Listeners(); //uklanja slusaoce dogadjaja kada je protivnik na potezu
         }
     }
+    if (ui=='game5'){
+        game5AnswerSubmitted=false;
+
+        const buttons = document.querySelectorAll(`#${ui} button`);
+        buttons.forEach(button => {
+            button.disabled = !isActive;
+        });
+       
+        let playerMessage2=document.getElementById('player-message2');
+        
+        if (isActive) {
+            playerMessage2.textContent='Vi ste na potezu!';
+            removeGame5Listeners(); //uklanja stare slusaoce dogadjaja
+            setupGame5Listeners(ws);//postavlja nove slusaoce dogadjaja
+        }else{
+            playerMessage2.textContent='Protivnik je na potezu, sačekajte svoj red!';
+            removeGame5Listeners();//uklanja slusaoce dogadjaja kada je protivnik na potezu
+        }
+    }
 }
 
 initializeBoard();  //inicijalizuje se jednom na pocetku igre, za trecu igru Paukova Sifra
 // ToDo: iniucijalizacija table za igru 4
+initializeBoard2(); //inicijalizuje se jednom na pocetku igre, za petu igru Utekni pauku
 
 function appendText(selector) {
     console.log('append text called')
@@ -95,8 +121,10 @@ function appendText(selector) {
     sadrzaj elemenata na osnovu pristiglih podataka
     ♥update_timer-azurira prikaz tajmera na osnovu pristigle vrednosti
     ♥guess-obradjuje podatak u trecoj igri pomocu funkcije handleGuess
+    ♥guess2-obradjuje podatak u petoj igri pomocu funkcije handleGuess2
     ♥game3_key_input-rukuje unosom tastera za trecu igru pomocu funkcije handleKeyInput
     ♥end_turn_update-azurira interfejs i dostupnost dugmadi u slucaju da je sedmi pokusaj na redu
+    ♥end_turn_update2-azurira interfejs i dostupnost dugmadi u slucaju da je sedmi pokusaj na redu
     ♥redirect-preusmerava korisnika na novu putanju na osnovu pristigle vrednosti pathname
     funkcija vraca WebSocket objekat ws
 */ 
@@ -126,6 +154,9 @@ function setupWebsocketConnection() {
             break
         case 'guess':
             handleGuess(data, ws);
+            break;
+        case 'guess2':
+            handleGuess2(data, ws);
             break;
         case 'game3_key_input':
             handleKeyInput(data);
@@ -157,6 +188,25 @@ function setupWebsocketConnection() {
         // case 'end4_turn_update':
         //     kada odigra prvi onda ima drugi pravo da igra ostatak
         //     break
+        case 'end_turn_update2':
+            console.log("Sedmi pokusaj");
+            const buttons2 = document.querySelectorAll(`#${ui} button`);
+            buttons2.forEach(button => {
+                button.disabled = !data.is_active;
+            });
+        
+            let playerMessage2=document.getElementById('player-message2');
+            errors = 7;
+            if (data.is_active) {
+                console.log("protivnicki igrac sme da upisuje");
+                playerMessage2.textContent='Vi ste na potezu!';
+                removeGame5Listeners(); //uklanja stare slusaoce dogadjaja
+                setupGame5Listeners(ws);//postavlja nove slusaoce dogadjaja
+            }else{
+                playerMessage2.textContent='Protivnik je na potezu, sačekajte svoj red!';
+                removeGame5Listeners();//uklanja slusaoce dogadjaja kada je protivnik na potezu
+            }
+            break;
         case 'redirect':
             window.location.pathname = pathname
             break
@@ -251,6 +301,9 @@ function setupTimer(ws) {
         }
         if(timerValue==1 && !game4AnswerSubmitted){
             console.log("saljem poruku da je isteklo vreme za cetvrtu igru");
+        }
+        if(timerValue==1 && !game5AnswerSubmitted){
+            console.log("saljem poruku da je isteklo vreme za petu igru");
             ws.send(JSON.stringify({
                 'type':'time_ran_out'
             }))
@@ -341,6 +394,29 @@ function initializeCol(leftWords, rightWords) {
         }
     }
 
+}
+
+/*
+    inicijalizuje tablu igre tako sto kreira osam praznih polja
+    prvo ocisti sve prethodno kreirane elemente unutar elementa sa id-em board, i
+    zatim iterira osam puta kreirajuci i dodavajuci div elemente za
+    svako polje ukoliko to polje vec ne postoji. Svako polje dobija jedinstveni id
+    i klasu position
+*/ 
+function initializeBoard2(){
+    const board2 = document.getElementById('board2');
+    board2.innerHTML = ''; // Očisti prethodne elemente ako postoje
+    for (let i = 0; i < 8; i++) {
+        const posId = `position-${i}`;
+        if (!document.getElementById(posId)) {
+            const newPos = document.createElement('div');
+            newPos.id = posId;
+            newPos.className = 'position';
+            newPos.textContent = '*';
+            board2.appendChild(newPos);
+        }
+    }
+     
 }
 
 /*
@@ -436,7 +512,8 @@ let handleKeyDownReference = null;
 /*
     postavlja slusaoce za klik dugmica i pristak na tastaturi u trecoj igri Paukova Sifra, 
     tako sto se najpre definisu fukcije handleButtonClickReference (poziva se kada se desi 
-    klik dogadjaj na dugmicu i poziva funkciju handleButtonClick) i handleKeyDownReference 
+    klik dogadjaj na dugmicu i poziva funkciju handleButtonClick) i 
+    Reference 
     (poziva se kada se desi prtisak na tastaturi i poziva handleKeyDown funkciju). Zatim se 
     dodaje dogadjaj klik za sve dugmice na ekranu koji ce pozvati handleButtonClickReference, 
     kao i dogadjaj za pritisak na tastaturi koji ce pozvati handleKeyDownReference
@@ -598,6 +675,250 @@ function removeGame4Listeners() {
     
 
 /*
+    obradjuje povratne informacije nakon pogadjanja reci ili slova u petoj igri Utekni pauku,
+    kao ulazne parametre prima data-objekat koji sadrzi povratne informacije i ws-WebSocket 
+    konekciju koja se koristi za slanje poruka serveru;
+    funkcija iterira kroz niz feedback (sadrzi povratne informacije o tome da li je neko slovo pogodjeno ili ne)
+    i azurira polja na osnovu toga. Ukoliko je igra zavrsena, a igrac koji je na potezu je
+    uspesno pogodio zadatu rec, resetuje se tabla kako bi bila spremna za narednu rundu.
+    U suprotnom, prelazi se na naredni pokusaj. 
+    Ukoliko je trenutni igrac napravio sest gresaka onemogucavaju se dugmici za unos slova i azurira se poruka koji je igrac na potezu,
+    salje se poruka serveru da je pokusaj tog igraca zavrsen. Ukoliko je broj gresaka dostigao sedam to znaci
+    da ni protivnicki igrac nije uspeo da pogodi zadatu rec i tabla se resetuje
+*/
+function handleGuess2(data, ws){
+    let feedback = data.feedback;
+    let finished = data.finished;
+    let arr = data.guessed_array
+    errors=data.errors;
+    let player=data.player;
+
+    for (let i = 0; i < feedback.length; i++) {
+        const posId = `position-${i}`;
+        console.log("posID je " + posId);
+        const position = document.getElementById(posId);
+        const c = feedback[i];
+        console.log("ovde je karakter " + c);
+        if (c != '*') {
+            position.textContent = c;
+        } else {
+            position.textContent = "*"
+        }
+    }
+
+    display_guessed(`Prethodni pokušaji: ${arr.join(', ')}`);
+
+    if (finished) { //igrac koji je na potezu pronasao rec
+        console.log("Pogodjena rec "+data.targetWord+" uz "+ errors +" gresaka");
+        setTimeout(() => {
+            resetBoard2(); // Resetuje tablu nakon zavrsetka runde
+        }, 100)
+    } else {
+        console.log("Nije pogodjena rec "+data.targetWord+" uz "+ errors +" gresaka")
+        if (errors == 6) {
+            console.log("igra je zavrsena za protivnika sa bojom "+player);
+            document.querySelectorAll('.keyboard button').forEach(button => button.disabled = true);
+            const playerMessage = document.getElementById('player-message2');
+            playerMessage.textContent = 'Protivnik je na potezu, sačekajte svoj red!';
+            ws.send(JSON.stringify({
+                type: 'end_turn2',
+                player: player
+            }));
+            removeGame5Listeners(); // Uklanja slušaoce dogadjaja nakon sestog pokušaja  
+        }
+        else if (errors==7){
+            setTimeout(() => {
+                resetBoard2(); // Resetuje tablu nakon zavrsetka runde
+            }, 100);
+        }   
+    }
+}
+
+/*
+    funkcija resetuje tablu sa poljima u petoj igri Utekni pauku tako sto
+    brise slova iz polja, brise rec iz polja za unos reci i resetuje niz pogodjenih reci i slova
+*/
+function resetBoard2() {
+    for (let i = 0; i < 8; i++) {
+        const position = document.getElementById(`position-${i}`);
+        position.textContent = '*';
+    }
+    errors = 0
+    document.getElementById(`input_letter`).textContent = '';
+    document.getElementById(`input_word`).value = '';
+    document.getElementById(`display_guessed`).textContent = '';
+}
+
+/*
+    promenljive cuvaju reference na funkcije koje rukuju dogadjajima 
+    klikova na tastere kako bi se obezbedilo ispravno postavljanje
+    i uklanjanje osluskivaca
+*/
+let handleLetterClickReference = null;  
+let handleWordInputReference = null;  
+let handleLetterInputReference = null;
+
+/*
+    funkcija sluzi za ispisivanje unetih reci i slova igraca u toj rundi
+*/
+function display_guessed(message){
+    display_guessed_div.textContent = message;
+}
+
+/*
+    postavlja slusaoce za klik dugmica u petoj igri UtekniPauku, 
+    tako sto se najpre definisu fukcije handleLetterClickReference (poziva se kada se desi 
+    klik dogadjaj na dugmicu i poziva funkciju handleLetterClick), handleLetterInputReference 
+    (poziva se kada se pritisne dugme za unos slova i poziva funkciju handleLetterInput) i 
+    handleWordInputReference (poziva se kada se pritisne dugme za unos reci i poziva funkciju 
+    handleWordInput). Zatim se dodaje dogadjaj klik za sve dugmice na ekranu koji ce pozvati 
+    handleLetterClickReference.
+   
+*/
+function setupGame5Listeners(ws) {
+    handleLetterClickReference = (event) => handleLetterClick(event, ws);       //kliknuto dugme
+    handleLetterInputReference = (event) => handleLetterInput(event, ws);     //submit slovo
+    handleWordInputReference = (event) => handleWordInput(event, ws);       //submit rec
+
+    document.querySelectorAll('.keyboard button').forEach(button => {
+        button.addEventListener('click', handleLetterClickReference);
+    });
+
+    document.querySelector('#submit_letter').addEventListener('click', handleLetterInputReference);
+    document.querySelector('#submit_word').addEventListener('click', handleWordInputReference);
+}
+
+/*
+    uklanja slusaoce dogadjaja koji su prethodno postavljeni u setupGame5Listeners. Funkcija
+    radi tako sto se najpre proveri postojanje handleLetterClickReference i ukoliko postoji 
+    selektuju se svi dugmici i sa njih se uklanja dogadjaj za klik na dugmice povezan sa 
+    handleLetterClickReference. Potom, proverava se postojanje handleLetterInputReference i ako
+    postoji uklanja se dogadjaj za pritisak na dugme submit_letter. Potom, proverava se 
+    postojanje handleWordInputReference i ako postoji uklanja se dogadjaj za pritisak na dugme submit_word.
+*/
+function removeGame5Listeners() {
+    if (handleLetterClickReference) {
+        document.querySelectorAll('.keyboard button').forEach(button => {
+            button.removeEventListener('click', handleLetterClickReference);
+        });
+    }
+    if (handleLetterInputReference) {
+        document.querySelector('#submit_letter').removeEventListener('click', handleLetterInputReference);
+    }
+    if (handleWordInputReference) {
+        document.querySelector('#submit_word').removeEventListener('click', handleWordInputReference);
+    }
+}
+
+/*
+    poziva se kada korisnik pritisne dugme na ekranu,
+    kao ulazne parametre prima event-dogadjaj koji se 
+    desio i ws-WebSocket konekcija potrebna kao parametar 
+    za handleInput2 funkciju;
+    funkcija poziva funkciju handleInput2 sa tekstom dugmeta koje je kliknuto i ws kao argumentima
+*/
+function handleLetterClick(event, ws) {
+    handleInput2(event.target.textContent, ws);
+}
+
+/*
+    poziva se kada korisnik pritisne dugme na ekranu za unos slova,
+    kao ulazne parametre prima event-dogadjaj koji se 
+    desio i ws-WebSocket konekcija potrebna kao parametar 
+    za handleInput2 funkciju;
+    funkcija poziva funkciju handleInput2 sa porukom da je 
+    pritisnuto dugme za unos slova
+*/
+function handleLetterInput(event, ws) {
+    handleInput2('EnterLetter', ws);
+}
+
+/*
+    poziva se kada korisnik pritisne dugme na ekranu za unos reci,
+    kao ulazne parametre prima event-dogadjaj koji se 
+    desio i ws-WebSocket konekcija potrebna kao parametar 
+    za handleInput2 funkciju;
+    funkcija poziva funkciju handleInput2 sa porukom da je 
+    pritisnuto dugme za unos reci
+*/
+function handleWordInput(event, ws) {
+    handleInput2('EnterWord', ws);
+}
+
+/*
+    obradjuje unos korisnika (dat kao prvi parametar input), 
+    tako sto ukoliko je korisnik uneo slovo, poziva se funkcija za proveru unetog slova checkLetter2 koja prima argument ws,
+    ukoliko korisnik uneo rec, poziva se funkcija za proveru unete reci checkWord2 koja prima argument ws,
+    i ukoliko je korisnik pritisnuo neko slovo poziva se funkcija za postavljanje tog slova na polje 
+    za prikaz pritisnutog slova odnosno addLetter2 koja prima to slovo i ws kao argumente
+*/
+function handleInput2(input, ws) {
+    if (input == 'EnterLetter'){
+        checkLetter2(ws);
+    } else if (input == 'EnterWord'){
+        if (errors==6) game5AnswerSubmitted=true;
+        checkWord2(ws);
+    }else{
+        addLetter2(input,ws);
+    }
+}
+
+/*
+    dodaje slovo na polje namenjeno za prikaz pritisnutog slova,
+    kao parametre prima slovo koje unosi i WebSocket 
+    konekciju za slanje poruke serveru
+*/
+function addLetter2(letter, ws) {
+    const input_let = document.getElementById(`input_letter`);
+    input_let.textContent = letter;
+}
+
+
+/*
+    funkcija proverava uneto slovo,
+    kao ulazni parametar prima WebSocket konekciju za slanje poruke serveru,
+    funkcija salje slovo preko WebSocket-a sa informacijama o unesenom slovu (i neunesenoj reci) 
+    i broju nacinjenih gresaka
+*/
+function checkLetter2(ws) {
+    let guessedLetter = '';
+    guessedLetter = document.getElementById(`input_letter`).textContent;
+    guessedLetter = guessedLetter.toUpperCase();
+    console.log("uneto je slovo " + guessedLetter);
+
+    ws.send(JSON.stringify({
+        type: 'game5_answer',
+        word: null,
+        letter: guessedLetter,
+        errors: errors
+    }));
+}
+
+/*
+    funkcija proverava unetu rec,
+    kao ulazni parametar prima WebSocket konekciju za slanje poruke serveru,
+    funkcija salje rec preko WebSocket-a sa informacijama o unesenoj reci (i neunesenom slovu) 
+    i broju nacinjenih gresaka
+*/
+function checkWord2(ws) {
+    let guessedWord = "";
+    guessedWord = document.getElementById(`input_word`).value;
+    if (guessedWord == "") {
+        guessedWord = null;
+    } else {
+        guessedWord = guessedWord.toUpperCase();
+    }
+    console.log("uneta je rec " + guessedWord);
+
+    ws.send(JSON.stringify({
+        type: 'game5_answer',
+        word: guessedWord,
+        letter: null,
+        errors: errors
+    }));
+}
+
+/*
     postavlja osnovne elemente i logiku potrebnu za rad igre 
     tako sto kreira i postavlja WebSocket konekciju za komunikaciju sa serverom koju cuva u promenljivoj ws,
     postavlja dogadjaje za prvu i drugu igru i ukoliko je treca igra vidljiva na ekranu postavljaju se dogadjaji za trecu igru i inicijalizuje se tabla
@@ -612,8 +933,11 @@ function main() {
         setupGame3Listeners(ws);
         initializeBoard();
     }
-
     // ToDo: setupGame4Listener(ws); + initializeCol();
+    if (document.getElementById('game5').style.display === 'block') {
+        setupGame5Listeners(ws);
+        initializeBoard2();
+    }
 
     
 }
