@@ -2,6 +2,7 @@
     Ivan Cancar 2021/0604,
     Sanja Drobnjak 2021/0492
     Luka Skoko 2021/0497
+    Tanja Kvascev 2021/0031
 """
 
 from django.contrib.auth.models import User
@@ -140,6 +141,7 @@ class SkokNaMrezu(Igra, RandomSampleMixin):
 
     Postavka = models.TextField()
     Odgovor = models.IntegerField()
+    
 
     class Meta:
         verbose_name = "SkokNaMrezu"
@@ -293,14 +295,104 @@ class Umrezavanje(Igra, RandomSampleMixin):
         verbose_name_plural = "Umrezavanje"
 
     
-
-
+"""
+    ova klasa predstavlja model igre Utkni pauku i nasledjuje osnovne funkcionalnosti iz klasa Igra i RandomSampleMixin;
+    polje klase TrazenaRec predstavlja tekstualno polje za rec koju igraci treba da pogode
+"""
 class UtekniPauku(Igra, RandomSampleMixin):
     TrazenaRec = models.CharField(max_length=20)
 
     class Meta:
         verbose_name = "UtekniPauku"
         verbose_name_plural = "UtekniPauku"
+
+
+    """
+        f-ja proverava da li uneto slovo (ulazni parametar letter) postoji u zadatoj reci,
+        tako sto poredi uneto slovo sa svakim karakterom u trazenoj reci;
+        rezultat je niz karaktera (* ako slovo jos nije otkriveno, a slovo ukoliko je otkriveno sad ili ranije) 
+        i status (da li slovo postoji u trazenoj reci ili ne)
+    """
+    def get_feedback(self, letter, feedback):
+        rec = self.TrazenaRec.upper()
+        letter = letter.upper()
+        status = False
+
+        for i in range(len(feedback)):
+            if rec[i] == letter:
+                status = True
+                feedback[i]=letter
+
+        return feedback, status
+    
+    """
+        f-ja proverava da li je uneta rec (ulazni parametar word) jednaka zadatoj reci,
+        tako sto poredi svki karakter unete reci sa svakim karakterom u trazenoj reci;
+        rezultat je niz karaktera (isti kao sto je bio ako uneta rec nije dobra ili su sva slova otkrivena ako je rec dobra)
+        i status (da li je rec pogodjena ili ne)
+    """
+    def get_feedback_word(self, word, feedback):  #proverava stanje pokusaja igraca sa zadatom reci iz baze
+        rec = self.TrazenaRec.upper()
+        if word is None:
+            return feedback, False
+        word = word.upper()
+
+        if (len(rec) > len(word)):
+            length = len(word)
+        else:
+            length = len(rec)
+
+        pogodjena = True
+        for i in range(length):
+            if rec[i] != word[i]:
+                pogodjena = False
+
+        if (pogodjena):
+            for i in range(length):
+                feedback[i] = rec[i]
+
+        return feedback, pogodjena
+
+    """
+        odredjuje broj poena na osnovu broja pokusaja (ulazni parametar attempts) potrebnih da se pogodi rec;
+        kao rezultat vraca odgovarajuci broj poena u zavisnosti od broja pokusaja
+    """
+    def get_score(self, errors):
+        if errors == 1 or errors == 2:
+            return 20
+        elif errors in (3, 4):
+            return 15
+        elif errors in (5, 6, 7):
+            return 10
+        return 0
+
+    """
+        racuna osvojene poene za jednog igraca na osnovu njegovih pokusaja zadatih slova ili reci.
+        Ukoliko je pogodjeno slovo ili rec otkrilo celu rec, kao rezultat metoda vraca broj poena na osnovu broja pokusaja pozivanjem metode get_score,
+        inace kao rezultat vraca nulu
+    """
+
+    def get_player_and_score(self, player_errors, guessed_letter, feedback):    #racuna osvojene poene za jednu rec tj jedan pokusaj
+        player_correct = True
+        f,s = self.get_feedback(guessed_letter,feedback)
+        for i in range(len(feedback)):
+            if f[i] == "*":
+                player_correct = False
+        if(player_correct==False):
+            return 0
+        return self.get_score(player_errors)
+    
+    def get_player_and_score_word(self, player_errors, guessed_word, feedback):    #racuna osvojene poene za jednu rec tj jedan pokusaj
+        player_correct = True
+        f,s = self.get_feedback_word(guessed_word, feedback)
+        for i in range(len(feedback)):
+            if f[i] == "*":
+                player_correct = False
+        if(player_correct==False):
+            return 0
+        return self.get_score(player_errors)
+    
+
 
 
 class Okrsaj(models.Model):
