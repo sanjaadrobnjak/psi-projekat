@@ -294,7 +294,51 @@ class Umrezavanje(Igra, RandomSampleMixin):
         verbose_name = "Umrezavanje"
         verbose_name_plural = "Umrezavanje"
 
+            
+    correct_answers = 0
+    i = 1
+    @property
+    def answers(self):
+        return [
+            self.Odgovor1,
+            self.Odgovor2,
+            self.Odgovor3,
+            self.Odgovor4,
+            self.Odgovor5,
+            self.Odgovor6,
+            self.Odgovor7,
+            self.Odgovor8,
+            self.Odgovor9,
+            self.Odgovor10,
+        ]
+        # random.shuffle(answers)
+        # return answers
     
+
+
+    def shuffle_answers(self):
+        answers = self.answers
+        random.shuffle(answers)
+        return answers
+    
+
+    def check_answer(self, guess, player_answer): # uporedjuje trenuntno polje Odgovor i izabranio polje Odgovor
+        odgovor = getattr(self, f'Odgovor{self.i}').upper()
+        guess = guess.upper()
+
+        if odgovor == guess:
+            self.correct_answers += 1
+        self.i += 1
+        return self.correct_answers
+    
+    def get_score(self, correct_answers):
+        return correct_answers*3
+    
+    def get_player_points(self, player, correct_answers):
+        score = self.get_score(self, correct_answers)
+        player.score += score
+
+
 """
     ova klasa predstavlja model igre Utkni pauku i nasledjuje osnovne funkcionalnosti iz klasa Igra i RandomSampleMixin;
     polje klase TrazenaRec predstavlja tekstualno polje za rec koju igraci treba da pogode

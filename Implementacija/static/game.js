@@ -75,11 +75,11 @@ function showGameUI(ui,isActive, ws) {
         let playerMessage=document.getElementById('player-message');
         if (isActive) {
             playerMessage.textContent='Vi ste na potezu!';
-            removeGame4Listeners(); //uklanja stare slusaoce dogadjaja
-            setupGame4Listeners(ws); //postavlja nove slusaoce dogadjaja
+            removeGame4Listeners();
+            setupGame4Listeners(ws);
         }else{
             playerMessage.textContent='Protivnik je na potezu, sačekajte svoj red!';
-            removeGame4Listeners(); //uklanja slusaoce dogadjaja kada je protivnik na potezu
+            removeGame4Listeners();
         }
     }
     if (ui=='game5'){
@@ -370,9 +370,7 @@ function initializeBoard(){
     }  
 }
 
-
-// ToDo: SMJESTITI RIJECI IZ BAZE U leftWords i rightWords
-//       trebalo bi u svaki button da upisem tekst rijeci koju zelim da se ispise, kako???
+/*
 function initializeCol(leftWords, rightWords) {
     const board4 = document.getElementById('board4');
     board4.innerHTML = ''
@@ -394,7 +392,7 @@ function initializeCol(leftWords, rightWords) {
         }
     }
 
-}
+}*/
 
 /*
     inicijalizuje tablu igre tako sto kreira osam praznih polja
@@ -666,11 +664,21 @@ function checkWord(ws) {
 }
 
 function setupGame4Listeners(wd) {
+    /*const buttons = wd.querySelectorAll(".game4-container button");
 
+    buttons.forEach(button => {
+        button.addEventListener("click", () => {
+            // ToDo: logika klika na dugme
+            button.addEventListener('click', handleButtonClickReference);
+        });
+    });*/
 }
     
 function removeGame4Listeners() {
-
+    /*const buttons = document.querySelectorAll(".game4-container button");
+    buttons.forEach(button => {
+        button.removeEventListener("click", () => {});
+    });*/
 }
     
 
@@ -933,13 +941,17 @@ function main() {
         setupGame3Listeners(ws);
         initializeBoard();
     }
+
+    if (document.getElementById('game4').style.display === 'block') {
+        //setupGame4Listeners(ws);
+        // initializeCol(); // leftWords, rightWords problem
+    }
+
     // ToDo: setupGame4Listener(ws); + initializeCol();
     if (document.getElementById('game5').style.display === 'block') {
         setupGame5Listeners(ws);
         initializeBoard2();
     }
-
-    
 }
 
 main()
