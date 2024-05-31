@@ -1,6 +1,7 @@
 """
     Ivan Cancar 2021/0604,
     Sanja Drobnjak 2021/0492
+    Luka Skoko 2021/0497
 """
 
 from app.models import MrezaBrojeva
@@ -14,6 +15,7 @@ from operator import methodcaller
 
 from app.models import SkokNaMrezu
 from app.models import PaukovaSifra
+from app.models import Umrezavanje
 from django.http import JsonResponse
 from django.urls import reverse
 
@@ -45,6 +47,8 @@ class GameConsumer(JsonWebsocketConsumer):
         self.answer_time=0      #za drugu igru
         self.attempts=0         #za trecu igru
         self.my_guess=None      #za trecu igru
+        self.attempts4 = 0
+        self.correct_answers = 0 #za cetvrtu igru - za pracenje stanja igre
 
         self.accept()
         if self.opponent_color in consumers[self.game.id]:
@@ -158,6 +162,43 @@ class GameConsumer(JsonWebsocketConsumer):
             #self.send_both(update_ui)
             self.send_both({'type': 'update_timer', 'data': {'value': 10}})
 
+        elif 15<=next_round<=16:
+            um = OdigranaIgra.objects.get(Okrsaj=self.game, RedniBrojIgre=next_round).Igra.umrezavanje
+            active_player = 'blue' if next_round % 2 != 0 else 'orange'
+            passive_player = 'orange' if active_player == 'blue' else 'blue'
+            update_ui={
+                'type' : 'update_ui',
+                'data' : {
+                    'is_active':True,
+                    'opisPojmova': um.TekstPitanja,
+                    '0': um.Postavka1,
+                    '10': um.Odgovor1,
+                    '1': um.Postavka2,
+                    '11': um.Odgovor2,
+                    '2': um.Postavka3,
+                    '12': um.Odgovor3,
+                    '3': um.Postavka4,
+                    '13': um.Odgovor4,
+                    '4': um.Postavka5,
+                    '14': um.Odgovor5,
+                    '5': um.Postavka6,
+                    '15': um.Odgovor6,
+                    '6': um.Postavka7,
+                    '16': um.Odgovor7,
+                    '7': um.Postavka8,
+                    '17': um.Odgovor8,
+                    '8': um.Postavka9,
+                    '18': um.Odgovor9,
+                    '9': um.Postavka10,
+                    '19': um.Odgovor10,
+                    'blue-player-score': self.game.blue_player_score(),
+                    'orange-player-score': self.game.orange_player_score()
+                },
+                'ui' : 'game4'
+            }
+            self.send_json_to_player(update_ui, active_player)
+            self.send_json_to_player(update_ui, passive_player, is_active=False)
+            self.send_both({'type': 'update_timer', 'data': {'value': 90}})
         else:
             self.send_both({
                 'type': 'redirect',
@@ -182,7 +223,7 @@ class GameConsumer(JsonWebsocketConsumer):
         else:
             update_ui['data']['is_active'] = is_active
             consumers[self.game.id]['orange'].send_json(update_ui)
-            print(f'Sending to blue: {update_ui}')
+            print(f'Sending to orange: {update_ui}')
 
 
     def receive_json(self, content):
@@ -201,6 +242,12 @@ class GameConsumer(JsonWebsocketConsumer):
         elif method_name=='game3_key_input':
             self.send_both({
                 'type' : 'game3_key_input',
+                'data' : content['data']
+            })
+        elif method_name=='game4_key_input': # u js ako se klikne...
+            # self.game4_answer(content)
+            self.send_both({
+                'type' : 'game4_key_input',
                 'data' : content['data']
             })
         elif method_name=='end_turn':
@@ -284,6 +331,9 @@ class GameConsumer(JsonWebsocketConsumer):
         if 13<=round_num<=14:  
             self.timeout=True
             self.game3_round_over()
+        if 15<=round_num<=16:  
+            self.timeout=True
+            self.game4_round_over()
 
 
     def game2_round_over(self):
@@ -455,3 +505,60 @@ class GameConsumer(JsonWebsocketConsumer):
         if finished or self.attempts==7:
             #self.game3_round_over()
             self.load_next_round()
+
+    # da li je isteklo vrijeme, azuriranje poena
+def game4_round_over(self):
+        round_num = consumers[self.game.id]['round']
+        try:
+            round = OdigranaIgra.objects.get(Okrsaj=self.game, RedniBrojIgre=round_num)
+        except OdigranaIgra.DoesNotExist:
+            print(f"OdigranaIgra with Okrsaj={self.game.id} and RedniBrojIgre={round_num} does not exist.")
+            return
+        
+        um: Umrezavanje = round.Igra.umrezavanje
+        
+        if self.timeout:
+            attempts4 = 10
+            finished4 = False
+        else:
+            my_guess = self.my_guess
+            attempts4 = self.attempts4
+            feedback4 = um.get_feedback4(my_guess)
+            # finished = feedback4 == "pogodjenoNaMestu" # gdje se dodijeli feedback???'
+            finished4 = attempts4 == 10
+
+        active_player = 'blue' if round_num % 2 != 0 else 'orange'
+        passive_player = 'orange' if active_player == 'blue' else 'blue'
+
+        current_row = attempts4 - 1 if self.color == active_player else 10
+
+        self.send_both({
+            'type': 'guess',
+            'data': {
+                'feedback4': feedback4,
+                'finished4': finished4,
+                'currentRow': current_row,
+                'targetWord': um.TrazenaRec,
+                'player': self.color
+            },
+            'ui': 'game4'
+        })
+
+        if attempts4 < 10:
+            if self.color == 'blue':
+                round.Igrac1Poeni = um.get_player_and_score(attempts4, my_guess)
+            else:
+                round.Igrac2Poeni = um.get_player_and_score(attempts4, my_guess)
+        else:
+            if self.color == 'orange' and self.color == passive_player:
+                round.Igrac2Poeni = um.get_player_and_score(attempts4, my_guess)
+            elif self.color == 'blue' and self.color == passive_player:
+                round.Igrac1Poeni = um.get_player_and_score(attempts4, my_guess)
+
+        round.save()
+        self.load_next_round()
+
+
+    # uporedjuje da li je dobro povezano
+def game4_answer(self, content):
+    return

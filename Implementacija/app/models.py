@@ -1,9 +1,11 @@
 """
     Ivan Cancar 2021/0604,
     Sanja Drobnjak 2021/0492
+    Luka Skoko 2021/0497
 """
 
 from django.contrib.auth.models import User
+import random
 from django.db import models
 from django.db.models import Sum
 from .mixins import RandomSampleMixin
@@ -289,6 +291,8 @@ class Umrezavanje(Igra, RandomSampleMixin):
     class Meta:
         verbose_name = "Umrezavanje"
         verbose_name_plural = "Umrezavanje"
+
+    
 
 
 class UtekniPauku(Igra, RandomSampleMixin):

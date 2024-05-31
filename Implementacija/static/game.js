@@ -1,6 +1,7 @@
 /*
     Ivan Cancar 2021/0604,
     Sanja Drobnjak 2021/0492
+    Luka Skoko 2021/0497
 */ 
 
 const game1Submit = document.querySelector('#game1-submit')
@@ -12,6 +13,7 @@ let currentTile=0;          //koristi se u trecoj igri, Paukova sifra
 let game1AnswerSubmitted = false
 let game2AnswerSubmitted=false;
 let game3AnswerSubmitted=false;
+let game4AnswerSubmitted=false;
 
 /*
     prikazuje interfejs igre tako sto iterira kroz pet potencijalnih igara
@@ -56,16 +58,35 @@ function showGameUI(ui,isActive, ws) {
         }
         
     }
+    if(ui=='game4') {
+        game4AnswerSubmitted = false;
+
+        const buttons = document.querySelectorAll(`#${ui} button`); //
+        buttons.forEach(button => {
+            button.disabled = !isActive;
+        });
+
+        let playerMessage=document.getElementById('player-message');
+        if (isActive) {
+            playerMessage.textContent='Vi ste na potezu!';
+            removeGame4Listeners(); //uklanja stare slusaoce dogadjaja
+            setupGame4Listeners(ws); //postavlja nove slusaoce dogadjaja
+        }else{
+            playerMessage.textContent='Protivnik je na potezu, sačekajte svoj red!';
+            removeGame4Listeners(); //uklanja slusaoce dogadjaja kada je protivnik na potezu
+        }
+    }
 }
 
 initializeBoard();  //inicijalizuje se jednom na pocetku igre, za trecu igru Paukova Sifra
+// ToDo: iniucijalizacija table za igru 4
 
 function appendText(selector) {
     console.log('append text called')
     console.log(this.event.target.textContent)
     document.querySelector(selector).value += this.event.target.textContent
 }
-
+// ToDo: onClick za buttone
 
 /*
     povezuje se na WebSocket server koristeci trenutnu lokaciju;
@@ -109,6 +130,10 @@ function setupWebsocketConnection() {
         case 'game3_key_input':
             handleKeyInput(data);
             break;
+        // !!!
+        // case 'game4_key_input':
+        //     handle4KeyInput(data);
+        //     break;
         case 'end_turn_update':
             console.log("Sedmi pokusaj je na redu");
             const buttons = document.querySelectorAll(`#${ui} button`);
@@ -128,6 +153,10 @@ function setupWebsocketConnection() {
                 removeGame3Listeners();//uklanja slusaoce dogadjaja kada je protivnik na potezu
             }
             break;
+        // !!!
+        // case 'end4_turn_update':
+        //     kada odigra prvi onda ima drugi pravo da igra ostatak
+        //     break
         case 'redirect':
             window.location.pathname = pathname
             break
@@ -152,7 +181,9 @@ function handleKeyInput(data) {
         tileElement.textContent = '';
     }
 }
-
+// TODO !!!
+//function handle4KeyInput(data):
+//    return;
 function setupGame1Listeners(ws) {
     game1Answer.addEventListener('keydown', e => {
         if (e.key === 'Enter') {
@@ -191,8 +222,8 @@ function setupGame1Listeners(ws) {
     ♥ako je vrednost tajmera 0, funkcija prestaje sa daljim izvrsavanjem za taj interval
     ♥ako vrednost tajmera nije 0, smanjuje se vrednost za 1 i azurira se prikaz elementa timer
     ♥ako je vrednost tajmera 1 i odgovori za igre nisu poslati (u prve dve igre dugmici za potvrdu, 
-    u trecoj igri ukoliko za sedmi pokusaj nije pritisnut enter), salje se poruka preko WebSocket-a
-    sa tipom time_ran_out
+    u trecoj igri ukoliko za sedmi pokusaj nije pritisnut enter, u cetvrtoj igri ukoliko nije odigran deseti potez),
+    salje se poruka preko WebSocket-a sa tipom time_ran_out
 */ 
 function setupTimer(ws) {
     setInterval(() => {
@@ -214,6 +245,12 @@ function setupTimer(ws) {
         }
         if(timerValue==1 && !game3AnswerSubmitted){
             console.log("saljem poruku da je isteklo vreme za trecu igru");
+            ws.send(JSON.stringify({
+                'type':'time_ran_out'
+            }))
+        }
+        if(timerValue==1 && !game4AnswerSubmitted){
+            console.log("saljem poruku da je isteklo vreme za cetvrtu igru");
             ws.send(JSON.stringify({
                 'type':'time_ran_out'
             }))
@@ -278,6 +315,32 @@ function initializeBoard(){
             }
         }
     }  
+}
+
+
+// ToDo: SMJESTITI RIJECI IZ BAZE U leftWords i rightWords
+//       trebalo bi u svaki button da upisem tekst rijeci koju zelim da se ispise, kako???
+function initializeCol(leftWords, rightWords) {
+    const board4 = document.getElementById('board4');
+    board4.innerHTML = ''
+
+    for(let i = 0; i < 10; i++) {
+        const leftButton = document.getElementById(`${i}`);
+        const rightButton = document.getElementById(`${i + 10}`);
+
+        if (leftButton) {
+            leftButton.textContent = leftWords[i];
+        } else {
+            console.warn(`Levi element sa ID-jem ${i} nije pronađen.`);
+        }
+        
+        if (rightButton) {
+            rightButton.textContent = rightWords[i];
+        } else {
+            console.warn(`Desni element sa ID-jem ${i + 10} nije pronađen.`);
+        }
+    }
+
 }
 
 /*
@@ -525,6 +588,15 @@ function checkWord(ws) {
     }));
 }
 
+function setupGame4Listeners(wd) {
+
+}
+    
+function removeGame4Listeners() {
+
+}
+    
+
 /*
     postavlja osnovne elemente i logiku potrebnu za rad igre 
     tako sto kreira i postavlja WebSocket konekciju za komunikaciju sa serverom koju cuva u promenljivoj ws,
@@ -540,6 +612,8 @@ function main() {
         setupGame3Listeners(ws);
         initializeBoard();
     }
+
+    // ToDo: setupGame4Listener(ws); + initializeCol();
 
     
 }
