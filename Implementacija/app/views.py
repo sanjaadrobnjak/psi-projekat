@@ -15,3 +15,8 @@ def index(request):
             return render(request, 'app/index.html')
         return redirect('home-view')
     return render(request, 'app/index.html')
+
+"""
+def games5(request):
+    return render(request, 'game5.html')
+"""

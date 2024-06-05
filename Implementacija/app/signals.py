@@ -32,8 +32,8 @@ def okrsaj_post_save(sender, instance, created, **kwargs):
         *MrezaBrojeva.sample(2),
         *SkokNaMrezu.sample(10),
         *PaukovaSifra.sample(2),
-        *Umrezavanje.sample(2),
-        *UtekniPauku.sample(2)
+        *UtekniPauku.sample(2),
+        *Umrezavanje.sample(2)
     ]
     for i, round in enumerate(rounds, start=1):
         OdigranaIgra(Okrsaj=instance, Igra=round, RedniBrojIgre=i).save()

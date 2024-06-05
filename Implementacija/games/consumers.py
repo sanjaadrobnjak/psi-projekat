@@ -30,6 +30,7 @@ class GameConsumer(JsonWebsocketConsumer):
         'game1_answer',
         'game2_answer',
         'game3_answer',
+        'game4_answer',
         'game5_answer',
     'time_ran_out')
 
@@ -53,8 +54,9 @@ class GameConsumer(JsonWebsocketConsumer):
         self.attempts=0         #za trecu igru
         self.my_guess=None      #za trecu igru
 
-        self.attempts4 = 0
-        self.correct_answers = 0 #za cetvrtu igru - za pracenje stanja igre
+        self.my_guess4 = None    #za cetvrtu igru
+        self.attempts4 = 0       #za cetvrtu igru
+        self.correct_answers = 0 #za cetvrtu igru
 
         self.errors=0                   #za petu igru
         self.guessed_letter=None        #za petu igru
@@ -177,7 +179,7 @@ class GameConsumer(JsonWebsocketConsumer):
             #self.send_both(update_ui)
             self.send_both({'type': 'update_timer', 'data': {'value': 100}})
 
-        elif 15<=next_round<=16:
+        elif 17<=next_round<=18:
             um = OdigranaIgra.objects.get(Okrsaj=self.game, RedniBrojIgre=next_round).Igra.umrezavanje
             active_player = 'blue' if next_round % 2 != 0 else 'orange'
             passive_player = 'orange' if active_player == 'blue' else 'blue'
@@ -216,8 +218,8 @@ class GameConsumer(JsonWebsocketConsumer):
             # self.send_both({'type': 'update_timer', 'data': {'value': 90}})
 
             self.send_both({'type': 'update_timer', 'data': {'value': 60}})
-
-        elif 17<=next_round<=18:
+            
+        elif 15<=next_round<=16:
             next_game=OdigranaIgra.objects.get(Okrsaj=self.game, RedniBrojIgre=next_round).Igra.uteknipauku
             active_player = 'blue' if next_round % 2 != 0 else 'orange'
             passive_player = 'orange' if active_player == 'blue' else 'blue'
@@ -282,12 +284,12 @@ class GameConsumer(JsonWebsocketConsumer):
                 'type' : 'game3_key_input',
                 'data' : content['data']
             })
-        elif method_name=='game4_key_input': # u js ako se klikne...
-            # self.game4_answer(content)
-            self.send_both({
-                'type' : 'game4_key_input',
-                'data' : content['data']
-            })
+        # elif method_name=='game4_key_input': # lukaBr
+        #     # self.game4_answer(content)
+        #     self.send_both({
+        #         'type' : 'game4_key_input',
+        #         'data' : content['data']
+        #     })
         elif method_name=='end_turn':
             player = content['player']
             opponent_color = 'orange' if player == 'blue' else 'blue'
@@ -302,9 +304,9 @@ class GameConsumer(JsonWebsocketConsumer):
             self.send_json_to_player(end_turn_update, player, is_active=False)
             self.send_json_to_player(end_turn_update, opponent_color)
         elif method_name=='end_turn4':
-            # player = content['player']
-            # opponent_color = 'orange' if player == 'blue' else 'blue'
-            opponent_color = 'orange'
+            player = content['player']
+            opponent_color = 'orange' if player == 'blue' else 'blue'
+            # opponent_color = 'orange'
             print(f'Ending turn for {player}, opponent is {opponent_color}')
             end_turn_update4={
                 'type': 'end_turn_update4',
@@ -380,7 +382,7 @@ class GameConsumer(JsonWebsocketConsumer):
             rukuje situacijom kada istekne vreme u rundi, 
             tako sto postavlja promenljivu timeout na True za trenutnog igraca ako nije dao odgovor;
             ukoliko je protivniku vec isteklo vreme ili je dao odgovor poziva se odgovarajuca funkcija 
-            (game1_round_over, game2_round_over, game3_round_over, game5_round_over) da zavrsi trenutnu rundu igre
+            (game1_round_over, game2_round_over, game3_round_over, game5_round_over, game5_round_over) da zavrsi trenutnu rundu igre
         """
         round_num = consumers[self.game.id]['round']
         if round_num in (1, 2): # vrijeme isteklo za igru MrezaBrojeva
@@ -399,15 +401,14 @@ class GameConsumer(JsonWebsocketConsumer):
             self.timeout=True
             self.game3_round_over()
 
-        if 15<=round_num<=16:  
+        if 17<=round_num<=18:
             self.timeout=True
             self.game4_round_over()
 
-        if 17<=round_num<=18: 
+        if 15<=round_num<=16: 
             if self.guessed_letter is None and self.guessed_word is None:
                 self.timeout=True
                 self.game5_round_over()
-
 
 
     def game2_round_over(self):
@@ -591,59 +592,129 @@ class GameConsumer(JsonWebsocketConsumer):
 
     # da li je isteklo vrijeme, azuriranje poena
 
-
-def game4_answer(self, content):
+def game4_round_over(self):
+    """
+        Završava trenutnu rundu igre Umrezavajne.
+        - Proverava da li je igraču isteklo vreme ili je iskoristio sve pokušaje.
+        - Postavlja povratne informacije.
+        - Ažurira poene na osnovu povezanih parova.
+        - Šalje informacije o rundi oba igrača.
+        - Resetuje status runde i učitava sledeću rundu.
+    """
     round_num = consumers[self.game.id]['round']
     try:
         round = OdigranaIgra.objects.get(Okrsaj=self.game, RedniBrojIgre=round_num)
     except OdigranaIgra.DoesNotExist:
         print(f"OdigranaIgra with Okrsaj={self.game.id} and RedniBrojIgre={round_num} does not exist.")
         return
-"""
-def game4_round_over_additional(self):
+
     um: Umrezavanje = round.Igra.umrezavanje
-    
+
+    # ako je isteklo vrjeme
     if self.timeout:
-        attempts4 = 10
-        finished4 = False
+        my_guess4 = None
+        attempts4 = self.attempts4 if self.attempts4 < 10 else 10
+        feedback = um.get_feedback(my_guess4)
+        finished = False
     else:
-        my_guess = self.my_guess
-        attempts4 = self.attempts4
-        feedback4 = um.get_feedback4(my_guess)
-        # finished = feedback4 == "pogodjenoNaMestu" # gdje se dodijeli feedback???'
-        finished4 = attempts4 == 10
+        my_guess4 = self.my_guess4
+        attempts = self.attempts
+        feedback = um.get_feedback(my_guess4)
+        correct_answers = self.correct_answers
+        finished = True
 
-    current_row = attempts4 - 1 if self.color == active_player else 10
-
-    um: Umrezavanje = round.Igra.umrezavanje
-    player_answer = content['answer']
-    correct_answers = []
-
-    for i in range(1, 11):
-        if player_answer[f'connection_{i}'] == um.get_correct_connection(i):
-            correct_answers.append(i)
-
-    points = len(correct_answers) * 3
-
-    if self.color == 'blue':
-        round.Igrac1Poeni = points
-    else:
-        round.Igrac2Poeni = points
-
-    round.save()
-
+    active_player = 'blue' if round_num % 2 != 0 else 'orange'
+    passive_player = 'orange' if active_player == 'blue' else 'blue'
+    
     self.send_both({
-        'type': 'umrezavanje_feedback',
+        'type': 'spojnice_feedback',
         'data': {
-            'correct_answers': correct_answers,
-            'player_color': self.color,
-            'points': points
+            'feedback': feedback,
+            'finished': finished,
+            'attempts': attempts,
+            'player': self.color
         },
         'ui': 'game4'
     })
-    if self.attempts4==10:
+    
+    """
+    if attempts < 10:
+        if self.color == 'blue':
+            round.Igrac1Poeni = um.get_player_and_score(attempts, self.guesses)
+        else:
+            round.Igrac2Poeni = um.get_player_and_score(attempts, self.guesses)
+    else:
+        if self.color == 'orange' and self.color == passive_player:
+            round.Igrac2Poeni = um.get_player_and_score(attempts, self.guesses)
+        elif self.color == 'blue' and self.color == passive_player:
+            round.Igrac1Poeni = um.get_player_and_score(attempts, self.guesses)
+    """
+    round.save()
+
+    if finished or self.attempts == 10 or self.timeout == True:
+        self.attempts = 0
+        self.my_guess4 = None
+        self.opponent.attempts = 0
+        self.opponent.my_guess4 = None
+        self.timeout = False
+        self.opponent.timeout = False
+        # self.load_next_round()
+    self.load_next_round()
+
+def game4_answer(self, content):
+    self.attempts4=content['attempts4']
+    round_num = consumers[self.game.id]['round']
+    try:
+        round = OdigranaIgra.objects.get(Okrsaj=self.game, RedniBrojIgre=round_num)
+    except OdigranaIgra.DoesNotExist:
+        print(f"OdigranaIgra with Okrsaj={self.game.id} and RedniBrojIgre={round_num} does not exist.")
+        return
+
+    um: Umrezavanje = round.Igra.umrezavanje
+
+    feedback=um.get_feedback(self.my_guess4)
+    finished= True
+
+    active_player = 'blue' if round_num % 2 != 0 else 'orange'
+    passive_player = 'orange' if active_player == 'blue' else 'blue'
+
+    current_row = self.attempts - 1 if self.color == active_player else 10
+    
+    self.send_both({
+        'type': 'guess',
+        'data': {
+            'feedback': feedback,
+            'finished': finished,
+            'currentRow' : current_row,
+            'player' : self.color
+            
+        },
+        'ui': 'game4'
+    })
+    
+    """
+    if self.attempts < 10:
+        if self.color == 'blue':
+            round.Igrac1Poeni = um.get_player_and_score(self.attempts, self.my_guess)
+            print(f'game3_answer: {round.Igrac1Poeni=}, {round.Igrac2Poeni=}')
+        else:
+            round.Igrac2Poeni = um.get_player_and_score(self.attempts, self.my_guess)
+            print(f'game3_answer: {round.Igrac1Poeni=}, {round.Igrac2Poeni=}')
+    else:
+        if self.color == 'orange' and self.color==passive_player:
+            round.Igrac2Poeni = um.get_player_and_score(self.attempts, self.my_guess)
+            print(f'game3_answer (sedmi pokusaj): {round.Igrac1Poeni=}, {round.Igrac2Poeni=}')
+        elif self.color=='blue' and self.color==passive_player:
+            # Protivnicki igrac je 'blue', njemu se dodaju poeni
+            round.Igrac1Poeni = um.get_player_and_score(self.attempts, self.my_guess)
+            print(f'game3_answer (sedmi pokusaj): {round.Igrac1Poeni=}, {round.Igrac2Poeni=}')
+    """
+
+    round.save()
+    if finished or self.attempts==10:
         self.load_next_round()
-"""
+
+
 """
     zavrsava trenutnu rundu igre Utekni pauku
     tako sto proverava da li je igracu isteklo vreme pre nego sto je iskoristio sve pokusaje i ukoliko jeste
@@ -735,56 +806,6 @@ def game5_round_over(self):
         self.opponent.feedback = ["*"] * 8
         self.opponent.timeout = False
         self.load_next_round()
-
-        
-
-
-
-def game4_round_over(self):
-    round_num = consumers[self.game.id]['round']
-    try:
-        round = OdigranaIgra.objects.get(Okrsaj=self.game, RedniBrojIgre=round_num)
-    except OdigranaIgra.DoesNotExist:
-        print(f"OdigranaIgra with Okrsaj={self.game.id} and RedniBrojIgre={round_num} does not exist.")
-        return
-
-    um: Umrezavanje = round.Igra.umrezavanje
-
-    total_points_blue = round.Igrac1Poeni
-    total_points_red = round.Igrac2Poeni
-
-    self.game.Igrac1Poeni += total_points_blue
-    self.game.Igrac2Poeni += total_points_red
-    self.game.save()
-
-    active_player = 'blue' if round_num % 2 != 0 else 'orange'
-    passive_player = 'orange' if active_player == 'blue' else 'blue'
-    self.send_both({
-        'type': 'umrezavanje_round_over',
-        'data': {
-            'total_points_blue': total_points_blue,
-            'total_points_red': total_points_red,
-            'player' : self.color
-        },
-        'ui': 'game4'
-    })
-
-    if round_num >= 10:
-        # End of the game
-        self.send_both({
-            'type': 'umrezavanje_game_over',
-            'data': {
-                'final_points_blue': self.game.Igrac1Poeni,
-                'final_points_red': self.game.Igrac2Poeni
-            },
-            'ui': 'game4'
-        })
-    else:
-        round.save()
-        self.load_next_round()
-
-        
-
 
 """
     funkcija obradjuje odgovor igraca u trecoj igri Utekni pauku, 

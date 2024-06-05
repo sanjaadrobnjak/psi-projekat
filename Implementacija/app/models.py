@@ -315,9 +315,8 @@ class Umrezavanje(Igra, RandomSampleMixin):
 
         random.shuffle(answersWithId)
         return answersWithId
-    
 
-    def check_answer(self, guess, player_answer): # uporedjuje trenuntno polje Odgovor i izabranio polje Odgovor
+    def get_feedback(self, guess): # uporedjuje trenuntno polje Odgovor i izabranio polje Odgovor
         odgovor = getattr(self, f'Odgovor{self.i}').upper()
         guess = guess.upper()
 
@@ -329,9 +328,13 @@ class Umrezavanje(Igra, RandomSampleMixin):
     def get_score(self, correct_answers):
         return correct_answers*3
     
-    def get_player_points(self, player, correct_answers):
+    def get_player_and_score(self, player, correct_answers):
         score = self.get_score(self, correct_answers)
         player.score += score
+
+    # def get_player_and_score(self, player_attempts, player_guess):
+
+
 
 
 """
