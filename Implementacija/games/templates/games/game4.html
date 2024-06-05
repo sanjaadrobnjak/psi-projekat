@@ -41,55 +41,54 @@
     }
     button {
         width: 200px;
+        height: 30px;
     }
 </style>
 <div  class="game4-container">
     <div class="text-center w-50 mx-auto">
-        <p id="player-message"></p>
+        <p id="player-message4"></p>
         <div class="row text-center my-3" id="opisPojmova"></div>
         <div id="board4"></div>
         <div class="row">
-            <div class="col"><button id="0"></button></div>
-            <div class="col"><button id="10"></button></div>
+            <div class="col"><button id="0">{{ question.Postavka1 }}</button></div>
+            <div class="col"><button id="10">{{ shuffled_answers.0.answer }}</button></div>
         </div>
         <div class="row">
-            <div class="col"><button id="1"></button></div>
-            <div class="col"><button id="11"></button></div>
+            <div class="col"><button id="1">{{ question.Postavka2 }}</button></div>
+            <div class="col"><button id="11">{{ shuffled_answers.1.answer }}</button></div>
         </div>
         <div class="row">
-            <div class="col"><button id="2"></button></div>
-            <div class="col"><button id="12"></button></div>
+            <div class="col"><button id="2">{{ question.Postavka3 }}</button></div>
+            <div class="col"><button id="12">{{ shuffled_answers.2.answer }}</button></div>
         </div>
         <div class="row">
-            <div class="col"><button id="3"></button></div>
-            <div class="col"><button id="13"></button></div>
+            <div class="col"><button id="3">{{ question.Postavka4 }}</button></div>
+            <div class="col"><button id="13">{{ shuffled_answers.3.answer }}</button></div>
         </div>
         <div class="row">
-            <div class="col"><button id="4"></button></div>
-            <div class="col"><button id="14"></button></div>
+            <div class="col"><button id="4">{{ question.Postavka5 }}</button></div>
+            <div class="col"><button id="14">{{ shuffled_answers.4.answer }}</button></div>
         </div>
         <div class="row">
-            <div class="col"><button id="5"></button></div>
-            <div class="col"><button id="15"></button></div>
+            <div class="col"><button id="5">{{ question.Postavka6 }}</button></div>
+            <div class="col"><button id="15">{{ shuffled_answers.5.answer }}</button></div>
         </div>
         <div class="row">
-            <div class="col"><button id="6"></button></div>
-            <div class="col"><button id="16"></button></div>
+            <div class="col"><button id="6">{{ question.Postavka7 }}</button></div>
+            <div class="col"><button id="16">{{ shuffled_answers.6.answer }}</button></div>
         </div>
         <div class="row">
-            <div class="col"><button id="7"></button></div>
-            <div class="col"><button id="17"></button></div>
+            <div class="col"><button id="7">{{ question.Postavka8 }}</button></div>
+            <div class="col"><button id="17">{{ shuffled_answers.7.answer }}</button></div>
         </div>
         <div class="row">
-            <div class="col"><button id="8"></button></div>
-            <div class="col"><button id="18"></button></div>
+            <div class="col"><button id="8">{{ question.Postavka9 }}</button></div>
+            <div class="col"><button id="18">{{ shuffled_answers.8.answer }}</button></div>
         </div>
         <div class="row">
-            <div class="col"><button id="9"></button></div>
-            <div class="col"><button id="19"></button></div>
+            <div class="col"><button id="9">{{ question.Postavka10 }}</button></div>
+            <div class="col"><button id="19">{{ shuffled_answers.9.answer }}</button></div>
         </div>
-    </div>
-    <div class="row w-25 mx-auto mt-5">
-        <button class="btn btn-primary w-100">Potvrdi</button>
+        <!-- <br> <br> <button onclick="shuffleColumn()">Shuffle Columns</button> -->
     </div>
 </div>

@@ -49,6 +49,7 @@ class GameConsumer(JsonWebsocketConsumer):
         self.answer_time=0      #za drugu igru
         self.attempts=0         #za trecu igru
         self.my_guess=None      #za trecu igru
+
         self.attempts4 = 0
         self.correct_answers = 0 #za cetvrtu igru - za pracenje stanja igre
 
@@ -171,7 +172,7 @@ class GameConsumer(JsonWebsocketConsumer):
             self.send_json_to_player(update_ui, active_player)
             self.send_json_to_player(update_ui, passive_player, is_active=False)
             #self.send_both(update_ui)
-            self.send_both({'type': 'update_timer', 'data': {'value': 10}})
+            self.send_both({'type': 'update_timer', 'data': {'value': 100}})
 
         elif 15<=next_round<=16:
             um = OdigranaIgra.objects.get(Okrsaj=self.game, RedniBrojIgre=next_round).Igra.umrezavanje
@@ -209,7 +210,7 @@ class GameConsumer(JsonWebsocketConsumer):
             }
             self.send_json_to_player(update_ui, active_player)
             self.send_json_to_player(update_ui, passive_player, is_active=False)
-            self.send_both({'type': 'update_timer', 'data': {'value': 90}})
+            # self.send_both({'type': 'update_timer', 'data': {'value': 90}})
 
             self.send_both({'type': 'update_timer', 'data': {'value': 60}})
 
@@ -297,6 +298,20 @@ class GameConsumer(JsonWebsocketConsumer):
             }
             self.send_json_to_player(end_turn_update, player, is_active=False)
             self.send_json_to_player(end_turn_update, opponent_color)
+        elif method_name=='end_turn4':
+            # player = content['player']
+            # opponent_color = 'orange' if player == 'blue' else 'blue'
+            opponent_color = 'orange'
+            print(f'Ending turn for {player}, opponent is {opponent_color}')
+            end_turn_update4={
+                'type': 'end_turn_update4',
+                'data': {
+                    'is_active': True
+                },
+                'ui': 'game4'
+            }
+            self.send_json_to_player(end_turn_update4, player, is_active=False)
+            self.send_json_to_player(end_turn_update4, opponent_color)
         elif method_name=='end_turn2':
             player = content['player']
             opponent_color = 'orange' if player == 'blue' else 'blue'

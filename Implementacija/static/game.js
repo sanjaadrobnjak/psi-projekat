@@ -72,7 +72,7 @@ function showGameUI(ui,isActive, ws) {
             button.disabled = !isActive;
         });
 
-        let playerMessage=document.getElementById('player-message');
+        let playerMessage=document.getElementById('player-message4');
         if (isActive) {
             playerMessage.textContent='Vi ste na potezu!';
             removeGame4Listeners();
@@ -105,6 +105,7 @@ function showGameUI(ui,isActive, ws) {
 
 initializeBoard();  //inicijalizuje se jednom na pocetku igre, za trecu igru Paukova Sifra
 // ToDo: iniucijalizacija table za igru 4
+// ToDo: onClick za buttone
 initializeBoard2(); //inicijalizuje se jednom na pocetku igre, za petu igru Utekni pauku
 
 function appendText(selector) {
@@ -112,7 +113,6 @@ function appendText(selector) {
     console.log(this.event.target.textContent)
     document.querySelector(selector).value += this.event.target.textContent
 }
-// ToDo: onClick za buttone
 
 /*
     povezuje se na WebSocket server koristeci trenutnu lokaciju;
@@ -184,10 +184,25 @@ function setupWebsocketConnection() {
                 removeGame3Listeners();//uklanja slusaoce dogadjaja kada je protivnik na potezu
             }
             break;
-        // !!!
-        // case 'end4_turn_update':
-        //     kada odigra prvi onda ima drugi pravo da igra ostatak
-        //     break
+        case end_turn_update4:
+            console.log("kraj runde");
+            const buttons4 = document.querySelectorAll(`#${ui} button`);
+            buttons4.forEach(button => {
+                button.disabled = !data.is_active;
+            });
+            let playerMessage4=document.getElementById('player-message4');
+
+            if (data.is_active || attempts == 10) {
+                console.log("protivnicki igrac sme da upisuje u igri 4");
+                playerMessage4.textContent='Vi ste na potezu!';
+                removeGame4Listeners();
+                setupGame4Listeners(ws);
+            }else{
+                playerMessage4.textContent='Protivnik je na potezu, sačekajte svoj red!';
+                removeGame4Listeners();
+            }
+            break;
+
         case 'end_turn_update2':
             console.log("Sedmi pokusaj");
             const buttons2 = document.querySelectorAll(`#${ui} button`);
@@ -231,9 +246,8 @@ function handleKeyInput(data) {
         tileElement.textContent = '';
     }
 }
-// TODO !!!
-//function handle4KeyInput(data):
-//    return;
+
+
 function setupGame1Listeners(ws) {
     game1Answer.addEventListener('keydown', e => {
         if (e.key === 'Enter') {
@@ -301,6 +315,9 @@ function setupTimer(ws) {
         }
         if(timerValue==1 && !game4AnswerSubmitted){
             console.log("saljem poruku da je isteklo vreme za cetvrtu igru");
+            ws.send(JSON.stringify({
+                'type':'time_ran_out'
+            }))
         }
         if(timerValue==1 && !game5AnswerSubmitted){
             console.log("saljem poruku da je isteklo vreme za petu igru");
@@ -369,30 +386,6 @@ function initializeBoard(){
         }
     }  
 }
-
-/*
-function initializeCol(leftWords, rightWords) {
-    const board4 = document.getElementById('board4');
-    board4.innerHTML = ''
-
-    for(let i = 0; i < 10; i++) {
-        const leftButton = document.getElementById(`${i}`);
-        const rightButton = document.getElementById(`${i + 10}`);
-
-        if (leftButton) {
-            leftButton.textContent = leftWords[i];
-        } else {
-            console.warn(`Levi element sa ID-jem ${i} nije pronađen.`);
-        }
-        
-        if (rightButton) {
-            rightButton.textContent = rightWords[i];
-        } else {
-            console.warn(`Desni element sa ID-jem ${i + 10} nije pronađen.`);
-        }
-    }
-
-}*/
 
 /*
     inicijalizuje tablu igre tako sto kreira osam praznih polja
@@ -663,22 +656,125 @@ function checkWord(ws) {
     }));
 }
 
-function setupGame4Listeners(wd) {
-    /*const buttons = wd.querySelectorAll(".game4-container button");
+
+/*
+function setupGame4Listeners(ws) {
+    const buttons = document.querySelectorAll(".game4-container button");
+    let firstSelected = null;
 
     buttons.forEach(button => {
-        button.addEventListener("click", () => {
-            // ToDo: logika klika na dugme
-            button.addEventListener('click', handleButtonClickReference);
-        });
-    });*/
+        button.addEventListener('click', createHandleButtonClickReference4(ws));
+    });
 }
-    
+
 function removeGame4Listeners() {
-    /*const buttons = document.querySelectorAll(".game4-container button");
+    const buttons = document.querySelectorAll(".game4-container button");
     buttons.forEach(button => {
-        button.removeEventListener("click", () => {});
-    });*/
+        button.removeEventListener("click", handleButtonClickReference4);
+    });
+}*/
+
+const buttonListeners = [];
+function setupGame4Listeners(ws) {
+    const buttons = document.querySelectorAll(".game4-container button");
+
+    buttons.forEach(button => {
+        const listener = createHandleButtonClickReference4(ws); // , data ???
+        buttonListeners.push({ button, listener });
+        button.addEventListener('click', listener);
+    });
+}
+
+function removeGame4Listeners() {
+    buttonListeners.forEach(({ button, listener }) => {
+        button.removeEventListener("click", listener);
+    });
+    buttonListeners.length = 0;
+}
+
+
+let firstSelectedButton = null;
+let attempts = 0;
+function createHandleButtonClickReference4(ws) { // , data ???
+    return function handleButtonClickReference4(event) {
+        const button = event.target;
+        const id = parseInt(button.id);
+        // let player=data.player;
+        // errors=data.errors;
+        // let finished = data.finished;
+
+
+        // Ako je dugme iz leve kolone (id od 0 do 9)
+        if (id >= 0 && id <= 9) {
+            if (!firstSelectedButton) {
+                // nema vec selektovano dugme (firstSelectedButton je null)
+                button.classList.add('selected');
+                firstSelectedButton = button;
+            } else {
+                // Ako je kliknuto drugo dugme iz leve kolone, resetuj selekciju na trenutno klinuto dugme
+                firstSelectedButton.classList.remove('selected');
+                button.classList.add('selected');
+                firstSelectedButton = button;
+            }
+        }
+        // Ako je dugme iz desne kolone (id od 10 do 19)
+        else if (id >= 10 && id <= 19) {
+            // pod uslovom da postiji vec selektovano dugme iz prve kolone mozemo da selektujemo i drugme iz druge kolone
+            if (firstSelectedButton) {
+                const firstId = parseInt(firstSelectedButton.id);
+
+                // Provera ispravnosti para (drugo dugme mora imati ID tačno 10 veći od prvog)
+                if (firstId + 10 === id) {
+                    firstSelectedButton.classList.remove('selected');
+                    firstSelectedButton.classList.add('matched');
+                    button.classList.add('matched');
+                } else {
+                    firstSelectedButton.classList.remove('selected');
+                    firstSelectedButton.classList.add('mismatched');
+                    button.classList.add('mismatched');
+                }
+
+                // Povećanje broja pokušaja
+                attempts++;
+
+                // Ako je broj pokušaja dostigao 10, resetuj sve uz 10 sekunda kašnjenja pre resetovanja    
+                const timerValue = parseInt(timer.textContent)        
+                if (attempts == 10 || timerValue == 0) {
+                    // resetovanje table nakon 1s nakon zavrsetka runde
+                    setTimeout(() => {
+                        resetBoard4();
+                        game4AnswerSubmitted = true;
+                    }, 1000); 
+
+                    // prebacivanje na drugog protivnika
+                    console.log("Partija cetvrte igre je zavrsena");
+                    const playerMessage4 = document.getElementById('player-message4');
+                    playerMessage4.textContent = 'Protivnik je na potezu, sačekajte svoj red!';
+
+                    ws.send(JSON.stringify({
+                        type: 'end_turn4',
+                        // player: player
+                    }));
+                    removeGame4Listeners();
+                }
+                // Resetovanje selekcije za sledeći par
+                firstSelectedButton = null;
+            }
+        }
+    }
+}
+
+// Resetovanje table tako da bude spremna za narednu igru
+function resetBoard4() {
+    console.log("u1");
+    document.querySelectorAll('.matched, .mismatched').forEach(btn => {
+        console.log("u2");
+        btn.classList.remove('matched', 'mismatched');
+        btn.classList.remove('selected');
+        // btn.disabled = false;
+    });
+    console.log("u3")
+    attempts = 0;
 }
     
 
@@ -932,6 +1028,8 @@ function checkWord2(ws) {
     postavlja dogadjaje za prvu i drugu igru i ukoliko je treca igra vidljiva na ekranu postavljaju se dogadjaji za trecu igru i inicijalizuje se tabla
 */
 function main() {
+    // shuffleAnswers();
+    // shuffleColumn();
     const ws = setupWebsocketConnection();
     setupTimer(ws);
     setupGame1Listeners(ws);
@@ -943,7 +1041,9 @@ function main() {
     }
 
     if (document.getElementById('game4').style.display === 'block') {
-        //setupGame4Listeners(ws);
+        // shuffleAnswers();
+        //shuffleColumn();
+        setupGame4Listeners(ws);
         // initializeCol(); // leftWords, rightWords problem
     }
 
@@ -954,4 +1054,4 @@ function main() {
     }
 }
 
-main()
+main();

@@ -297,29 +297,24 @@ class Umrezavanje(Igra, RandomSampleMixin):
             
     correct_answers = 0
     i = 1
+
     @property
-    def answers(self):
-        return [
-            self.Odgovor1,
-            self.Odgovor2,
-            self.Odgovor3,
-            self.Odgovor4,
-            self.Odgovor5,
-            self.Odgovor6,
-            self.Odgovor7,
-            self.Odgovor8,
-            self.Odgovor9,
-            self.Odgovor10,
-        ]
-        # random.shuffle(answers)
-        # return answers
-    
-
-
     def shuffle_answers(self):
-        answers = self.answers
-        random.shuffle(answers)
-        return answers
+        answersWithId =  [
+            {'id': 10, 'answer': self.Odgovor1},
+            {'id': 11, 'answer': self.Odgovor2},
+            {'id': 12, 'answer': self.Odgovor3},
+            {'id': 13, 'answer': self.Odgovor4},
+            {'id': 14, 'answer': self.Odgovor5},
+            {'id': 15, 'answer': self.Odgovor6},
+            {'id': 16, 'answer': self.Odgovor7},
+            {'id': 17, 'answer': self.Odgovor8},
+            {'id': 18, 'answer': self.Odgovor9},
+            {'id': 19, 'answer': self.Odgovor10},
+        ]
+
+        random.shuffle(answersWithId)
+        return answersWithId
     
 
     def check_answer(self, guess, player_answer): # uporedjuje trenuntno polje Odgovor i izabranio polje Odgovor

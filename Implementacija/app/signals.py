@@ -2,6 +2,7 @@
     Ivan Cancar 2021/0604,
     Sanja Drobnjak 2021/0492
     Tanja Kvascev 2021/0031
+    Luka Skoko 2021/0497
 """
 from .models import MrezaBrojeva
 from .models import SkokNaMrezu
@@ -31,7 +32,7 @@ def okrsaj_post_save(sender, instance, created, **kwargs):
         *MrezaBrojeva.sample(2),
         *SkokNaMrezu.sample(10),
         *PaukovaSifra.sample(2),
-        #*Umrezavanje.sample(2),
+        *Umrezavanje.sample(2),
         *UtekniPauku.sample(2)
     ]
     for i, round in enumerate(rounds, start=1):
