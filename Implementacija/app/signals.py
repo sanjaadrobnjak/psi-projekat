@@ -24,14 +24,14 @@ from django.dispatch import receiver
 """
 @receiver(post_save, sender=Okrsaj)
 def okrsaj_post_save(sender, instance, created, **kwargs):
-    if not created:
+    if not created or kwargs['raw']:
         return
 
     rounds = [
         *MrezaBrojeva.sample(2),
         *SkokNaMrezu.sample(10),
         *PaukovaSifra.sample(2),
-        #*Umrezavanje.sample(2),
+        *Umrezavanje.sample(2),
         *UtekniPauku.sample(2)
     ]
     for i, round in enumerate(rounds, start=1):

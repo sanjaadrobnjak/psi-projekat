@@ -25,7 +25,7 @@ SECRET_KEY = "django-insecure-^96_cu3f=zdv6p#18+c61q*0szd75i008#9dq=upu9c*li&zcv
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -88,6 +88,7 @@ DATABASES = {
         "NAME": "mrezaznanja",
         "PASSWORD": "123",
         "USER": "root",
+        'CONN_MAX_AGE': None
     }
 }
 

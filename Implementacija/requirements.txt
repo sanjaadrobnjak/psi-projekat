@@ -5,3 +5,6 @@ django-extensions
 docutils
 mysqlclient
 pydot
+pytest
+pytest-django
+pytest-asyncio

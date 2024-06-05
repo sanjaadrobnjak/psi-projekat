@@ -1,33 +1,35 @@
 from app.models import Korisnik
 from app.models import Okrsaj
-from channels.generic.websocket import WebsocketConsumer
-import json
+from channels.generic.websocket import AsyncJsonWebsocketConsumer
 
 
-_queued_consumer = None
+class LobbyConsumer(AsyncJsonWebsocketConsumer):
+    _queued_consumer = None
 
-class LobbyConsumer(WebsocketConsumer):
-    def connect(self):
-        if not self.scope['user'].is_authenticated:
-            self.close()
+    async def connect(self):
+        if 'user' not in self.scope or not self.scope['user'].is_authenticated:
+            await self.close()
             return
-        global _queued_consumer
-        self.accept()
-        if _queued_consumer is None:
-            _queued_consumer = self
+        await self.accept()
+        if LobbyConsumer._queued_consumer is None:
+            LobbyConsumer._queued_consumer = self
         else:
-            k1 = Korisnik.objects.get(pk=_queued_consumer.scope['user'])
-            k2 = Korisnik.objects.get(pk=self.scope['user'])
+            blue_user = LobbyConsumer._queued_consumer.scope['user']
+            orange_user = self.scope['user']
+            k1 = await Korisnik.objects.aget(pk=blue_user)
+            k2 = await Korisnik.objects.aget(pk=orange_user)
             game = Okrsaj(
                 Igrac1=k1,
                 Igrac2=k2,
             )
-            game.save()
-            self.send(text_data=json.dumps({'gameUrl': f'/games/{game.id}'}))
-            _queued_consumer.send(text_data=json.dumps({'gameUrl': f'/games/{game.id}'}))
-            _queued_consumer = None
+            await game.asave()
+            game_url = {
+                'gameUrl': f'/games/{game.id}'
+            }
+            await self.send_json(game_url)
+            await LobbyConsumer._queued_consumer.send_json(game_url)
+            LobbyConsumer._queued_consumer = None
 
-    def disconnect(self, code):
-        global _queued_consumer
-        if _queued_consumer:
-            _queued_consumer = None
+    async def disconnect(self, code):
+        if LobbyConsumer._queued_consumer:
+            LobbyConsumer._queued_consumer = None
