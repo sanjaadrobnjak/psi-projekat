@@ -1,4 +1,4 @@
-from .evaluator import evaluate, EvaluatorError
+from games.evaluator import evaluate, EvaluatorError
 from django.test import TestCase
 
 

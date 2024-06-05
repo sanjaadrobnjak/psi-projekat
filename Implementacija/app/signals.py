@@ -25,7 +25,7 @@ from django.dispatch import receiver
 """
 @receiver(post_save, sender=Okrsaj)
 def okrsaj_post_save(sender, instance, created, **kwargs):
-    if not created:
+    if not created or kwargs['raw']:
         return
 
     rounds = [

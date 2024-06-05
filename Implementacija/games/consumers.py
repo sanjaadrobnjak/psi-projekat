@@ -5,7 +5,6 @@
     Tanja Kvascev 2021/0031
 """
 
-from app.models import MrezaBrojeva
 from app.models import OdigranaIgra
 from app.models import Okrsaj
 from channels.generic.websocket import JsonWebsocketConsumer
@@ -14,11 +13,9 @@ from .evaluator import EvaluatorError
 from .evaluator import evaluate
 from operator import methodcaller
 
-from app.models import SkokNaMrezu
 from app.models import PaukovaSifra
 from app.models import Umrezavanje
 from app.models import UtekniPauku
-from django.http import JsonResponse
 from django.urls import reverse
 
 import time
@@ -29,7 +26,13 @@ class GameConsumer(JsonWebsocketConsumer):
     """\
     Websocket consumer klasa za komunikaciju sa igracem u toku igranja igre.
     """
-    PUBLIC_METHODS = ('game1_answer', 'game2_answer', 'game3_answer', 'game5_answer', 'time_ran_out')
+    PUBLIC_METHODS = (
+        'game1_answer',
+        'game2_answer',
+        'game3_answer',
+        'game5_answer',
+    'time_ran_out')
+
 
     def connect(self):
         """\
