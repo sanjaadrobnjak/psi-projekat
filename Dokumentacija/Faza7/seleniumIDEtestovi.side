@@ -2108,6 +2108,497 @@
       ],
       "value": "Ensure this value has at least 8 characters (it has 6)."
     }]
+  }, {
+    "id": "6e8001aa-9a70-487b-b638-214abb04e40c",
+    "name": "Logovanje korisnika - uspjesno logovanje",
+    "commands": [{
+      "id": "62f97c32-5b9f-482c-8fd4-4fc68d136c63",
+      "comment": "",
+      "command": "open",
+      "target": "/",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "c768b3ab-7f1e-48b3-a3f0-04f1e2960c2c",
+      "comment": "",
+      "command": "setWindowSize",
+      "target": "1036x1232",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "4fbdda0f-a122-4b1d-90a4-873e24260bcf",
+      "comment": "",
+      "command": "click",
+      "target": "linkText=Uloguj se",
+      "targets": [
+        ["linkText=Uloguj se", "linkText"],
+        ["css=.btn:nth-child(2)", "css:finder"],
+        ["xpath=//a[contains(text(),'Uloguj se')]", "xpath:link"],
+        ["xpath=//a[contains(@href, '/accounts/login')]", "xpath:href"],
+        ["xpath=//a[2]", "xpath:position"],
+        ["xpath=//a[contains(.,'Uloguj se')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "fb36c4fb-e866-4ac3-9cf9-2621e224f0f5",
+      "comment": "",
+      "command": "click",
+      "target": "id=username",
+      "targets": [
+        ["id=username", "id"],
+        ["name=username", "name"],
+        ["css=#username", "css:finder"],
+        ["xpath=//input[@id='username']", "xpath:attributes"],
+        ["xpath=//div/input", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "4f804450-adc1-4dae-bf6f-2186cd9091ab",
+      "comment": "",
+      "command": "type",
+      "target": "id=username",
+      "targets": [
+        ["id=username", "id"],
+        ["name=username", "name"],
+        ["css=#username", "css:finder"],
+        ["xpath=//input[@id='username']", "xpath:attributes"],
+        ["xpath=//div/input", "xpath:position"]
+      ],
+      "value": "lukalt"
+    }, {
+      "id": "3e47ba94-b3f3-4740-af61-c622b7161491",
+      "comment": "",
+      "command": "click",
+      "target": "id=password",
+      "targets": [
+        ["id=password", "id"],
+        ["name=password", "name"],
+        ["css=#password", "css:finder"],
+        ["xpath=//input[@id='password']", "xpath:attributes"],
+        ["xpath=//div[2]/input", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "fa18c031-cd0c-4a55-b621-ea15fdd037fa",
+      "comment": "",
+      "command": "type",
+      "target": "id=password",
+      "targets": [
+        ["id=password", "id"],
+        ["name=password", "name"],
+        ["css=#password", "css:finder"],
+        ["xpath=//input[@id='password']", "xpath:attributes"],
+        ["xpath=//div[2]/input", "xpath:position"]
+      ],
+      "value": "lukalt123"
+    }, {
+      "id": "1865d828-0c9f-4422-aba1-562f9fbf9ab9",
+      "comment": "",
+      "command": "click",
+      "target": "css=.btn",
+      "targets": [
+        ["css=.btn", "css:finder"],
+        ["xpath=//button[@type='submit']", "xpath:attributes"],
+        ["xpath=//button", "xpath:position"],
+        ["xpath=//button[contains(.,'Nastavi')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "1d02bcbd-1653-4328-b815-dea0930508b2",
+      "comment": "",
+      "command": "assertText",
+      "target": "css=.my-5",
+      "targets": [
+        ["css=.my-5", "css:finder"],
+        ["xpath=//h1", "xpath:position"]
+      ],
+      "value": "Dobrodošao nazad lukalt"
+    }]
+  }, {
+    "id": "ef013e08-3ed4-41a3-8c9e-e3690c22d9da",
+    "name": "Logovanje korisnika - polje Korisnicko ime je prazno",
+    "commands": [{
+      "id": "682fcf50-8503-4d0a-af88-439b83913ebc",
+      "comment": "",
+      "command": "open",
+      "target": "/",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "0e3fdb41-7e3f-4981-8d21-a011bef59e73",
+      "comment": "",
+      "command": "setWindowSize",
+      "target": "1036x1232",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "c5cb6c18-153e-4459-b066-c1fed4298501",
+      "comment": "",
+      "command": "click",
+      "target": "linkText=Uloguj se",
+      "targets": [
+        ["linkText=Uloguj se", "linkText"],
+        ["css=.btn:nth-child(2)", "css:finder"],
+        ["xpath=//a[contains(text(),'Uloguj se')]", "xpath:link"],
+        ["xpath=//a[contains(@href, '/accounts/login')]", "xpath:href"],
+        ["xpath=//a[2]", "xpath:position"],
+        ["xpath=//a[contains(.,'Uloguj se')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "b3717bf2-c862-475f-8da5-20d7ba013561",
+      "comment": "",
+      "command": "click",
+      "target": "id=password",
+      "targets": [
+        ["id=password", "id"],
+        ["name=password", "name"],
+        ["css=#password", "css:finder"],
+        ["xpath=//input[@id='password']", "xpath:attributes"],
+        ["xpath=//div[2]/input", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "9cbb7dab-e611-4f74-b8c3-b9551d8bd079",
+      "comment": "",
+      "command": "type",
+      "target": "id=password",
+      "targets": [
+        ["id=password", "id"],
+        ["name=password", "name"],
+        ["css=#password", "css:finder"],
+        ["xpath=//input[@id='password']", "xpath:attributes"],
+        ["xpath=//div[2]/input", "xpath:position"]
+      ],
+      "value": "lukalt123"
+    }, {
+      "id": "26f6d01d-a47e-417d-bed1-16e04be37145",
+      "comment": "",
+      "command": "click",
+      "target": "css=.btn",
+      "targets": [
+        ["css=.btn", "css:finder"],
+        ["xpath=//button[@type='submit']", "xpath:attributes"],
+        ["xpath=//button", "xpath:position"],
+        ["xpath=//button[contains(.,'Nastavi')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "3c10d022-3386-4f52-8136-0f1f6deac7f3",
+      "comment": "",
+      "command": "assertText",
+      "target": "css=.d-flex",
+      "targets": [
+        ["css=.d-flex", "css:finder"],
+        ["xpath=//div/div", "xpath:position"]
+      ],
+      "value": "Pogresno korisnicko ime ili sifra\\nKorisničko ime:\\nLozinka:\\nNastavi"
+    }, {
+      "id": "69be240e-42a8-4fc5-bbc2-b04d1fe1f3ec",
+      "comment": "",
+      "command": "assertValue",
+      "target": "id=username",
+      "targets": [
+        ["id=username", "id"],
+        ["name=username", "name"],
+        ["css=#username", "css:finder"],
+        ["xpath=//input[@id='username']", "xpath:attributes"],
+        ["xpath=//div/input", "xpath:position"]
+      ],
+      "value": ""
+    }]
+  }, {
+    "id": "04c9e313-140d-41a8-b64b-ad7ab831b60c",
+    "name": "Logovanje korisnika - polje Lozinka je prazno",
+    "commands": [{
+      "id": "39501dfb-bd73-410b-ad01-85e53ef31721",
+      "comment": "",
+      "command": "open",
+      "target": "/",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "65694ea8-fcbf-403f-b1a2-ed8f38e1c4f0",
+      "comment": "",
+      "command": "setWindowSize",
+      "target": "1036x1232",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "9d8d108a-fca4-4f06-992b-32c40dcb0484",
+      "comment": "",
+      "command": "click",
+      "target": "linkText=Uloguj se",
+      "targets": [
+        ["linkText=Uloguj se", "linkText"],
+        ["css=.btn:nth-child(2)", "css:finder"],
+        ["xpath=//a[contains(text(),'Uloguj se')]", "xpath:link"],
+        ["xpath=//a[contains(@href, '/accounts/login')]", "xpath:href"],
+        ["xpath=//a[2]", "xpath:position"],
+        ["xpath=//a[contains(.,'Uloguj se')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "9b76b2d8-d2c1-4689-913b-3ce7df9e371f",
+      "comment": "",
+      "command": "click",
+      "target": "id=username",
+      "targets": [
+        ["id=username", "id"],
+        ["name=username", "name"],
+        ["css=#username", "css:finder"],
+        ["xpath=//input[@id='username']", "xpath:attributes"],
+        ["xpath=//div/input", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "bcb43ce7-78a3-44d3-a3cc-08b27c29b153",
+      "comment": "",
+      "command": "type",
+      "target": "id=username",
+      "targets": [
+        ["id=username", "id"],
+        ["name=username", "name"],
+        ["css=#username", "css:finder"],
+        ["xpath=//input[@id='username']", "xpath:attributes"],
+        ["xpath=//div/input", "xpath:position"]
+      ],
+      "value": "lukalt"
+    }, {
+      "id": "8a3e8fe2-059e-4489-93d0-7eb17a7e216f",
+      "comment": "",
+      "command": "click",
+      "target": "css=.btn",
+      "targets": [
+        ["css=.btn", "css:finder"],
+        ["xpath=//button[@type='submit']", "xpath:attributes"],
+        ["xpath=//button", "xpath:position"],
+        ["xpath=//button[contains(.,'Nastavi')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "641ef87c-ad65-440b-9dae-42d62957dbcb",
+      "comment": "",
+      "command": "assertText",
+      "target": "css=.d-flex",
+      "targets": [
+        ["css=.d-flex", "css:finder"],
+        ["xpath=//div/div", "xpath:position"]
+      ],
+      "value": "Pogresno korisnicko ime ili sifra\\nKorisničko ime:\\nLozinka:\\nNastavi"
+    }]
+  }, {
+    "id": "f93803a8-8743-457a-9d0a-230af124afaf",
+    "name": "Logovanje korisnika - lozinka ne odgovara korisnickom imenu",
+    "commands": [{
+      "id": "5dede154-69aa-44cb-8de3-e036ac7854f4",
+      "comment": "",
+      "command": "open",
+      "target": "/",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "12ab62ee-93c4-4073-b3ba-1c7ee5dff820",
+      "comment": "",
+      "command": "setWindowSize",
+      "target": "1036x1232",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "0adf70b1-84e3-4321-b1bb-c2f01207d026",
+      "comment": "",
+      "command": "click",
+      "target": "linkText=Uloguj se",
+      "targets": [
+        ["linkText=Uloguj se", "linkText"],
+        ["css=.btn:nth-child(2)", "css:finder"],
+        ["xpath=//a[contains(text(),'Uloguj se')]", "xpath:link"],
+        ["xpath=//a[contains(@href, '/accounts/login')]", "xpath:href"],
+        ["xpath=//a[2]", "xpath:position"],
+        ["xpath=//a[contains(.,'Uloguj se')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "580baabf-d105-4a18-a002-125b5139254e",
+      "comment": "",
+      "command": "click",
+      "target": "id=username",
+      "targets": [
+        ["id=username", "id"],
+        ["name=username", "name"],
+        ["css=#username", "css:finder"],
+        ["xpath=//input[@id='username']", "xpath:attributes"],
+        ["xpath=//div/input", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "0c77c6df-10cc-404b-b592-50238c08cf94",
+      "comment": "",
+      "command": "type",
+      "target": "id=username",
+      "targets": [
+        ["id=username", "id"],
+        ["name=username", "name"],
+        ["css=#username", "css:finder"],
+        ["xpath=//input[@id='username']", "xpath:attributes"],
+        ["xpath=//div/input", "xpath:position"]
+      ],
+      "value": "lukalt"
+    }, {
+      "id": "41833e44-988e-4da3-8276-da9dabf478b6",
+      "comment": "",
+      "command": "click",
+      "target": "id=password",
+      "targets": [
+        ["id=password", "id"],
+        ["name=password", "name"],
+        ["css=#password", "css:finder"],
+        ["xpath=//input[@id='password']", "xpath:attributes"],
+        ["xpath=//div[2]/input", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "0bcd72a0-8977-44a1-a659-d9006bf3ad28",
+      "comment": "",
+      "command": "type",
+      "target": "id=password",
+      "targets": [
+        ["id=password", "id"],
+        ["name=password", "name"],
+        ["css=#password", "css:finder"],
+        ["xpath=//input[@id='password']", "xpath:attributes"],
+        ["xpath=//div[2]/input", "xpath:position"]
+      ],
+      "value": "luka123"
+    }, {
+      "id": "194d5646-441f-4e16-a0a0-4cf313b9d46a",
+      "comment": "",
+      "command": "click",
+      "target": "css=.btn",
+      "targets": [
+        ["css=.btn", "css:finder"],
+        ["xpath=//button[@type='submit']", "xpath:attributes"],
+        ["xpath=//button", "xpath:position"],
+        ["xpath=//button[contains(.,'Nastavi')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "906215d9-eca1-4a91-9508-a3a0ad18de0d",
+      "comment": "",
+      "command": "assertText",
+      "target": "css=.d-flex",
+      "targets": [
+        ["css=.d-flex", "css:finder"],
+        ["xpath=//div/div", "xpath:position"]
+      ],
+      "value": "Pogresno korisnicko ime ili sifra\\nKorisničko ime:\\nLozinka:\\nNastavi"
+    }]
+  }, {
+    "id": "c9debed4-f250-423f-bc32-c2dcb0754a58",
+    "name": "Logovanje korisnika - korisnicko ime ne postoji",
+    "commands": [{
+      "id": "142dc1b2-5a34-4abf-b717-873228e11d36",
+      "comment": "",
+      "command": "open",
+      "target": "/",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "a57d3b36-e110-48dd-bd67-d084a3c5028b",
+      "comment": "",
+      "command": "setWindowSize",
+      "target": "1036x1232",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "639549c4-05e3-43bc-a0f2-94a5da0c7b98",
+      "comment": "",
+      "command": "click",
+      "target": "linkText=Uloguj se",
+      "targets": [
+        ["linkText=Uloguj se", "linkText"],
+        ["css=.btn:nth-child(2)", "css:finder"],
+        ["xpath=//a[contains(text(),'Uloguj se')]", "xpath:link"],
+        ["xpath=//a[contains(@href, '/accounts/login')]", "xpath:href"],
+        ["xpath=//a[2]", "xpath:position"],
+        ["xpath=//a[contains(.,'Uloguj se')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "37a9d906-aa7c-4206-ad0b-93b6bfd3e2cc",
+      "comment": "",
+      "command": "click",
+      "target": "id=username",
+      "targets": [
+        ["id=username", "id"],
+        ["name=username", "name"],
+        ["css=#username", "css:finder"],
+        ["xpath=//input[@id='username']", "xpath:attributes"],
+        ["xpath=//div/input", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "69a92bfb-9eca-4250-b7eb-5be4a361bf00",
+      "comment": "",
+      "command": "type",
+      "target": "id=username",
+      "targets": [
+        ["id=username", "id"],
+        ["name=username", "name"],
+        ["css=#username", "css:finder"],
+        ["xpath=//input[@id='username']", "xpath:attributes"],
+        ["xpath=//div/input", "xpath:position"]
+      ],
+      "value": "nepostojecoKorisnickoIme"
+    }, {
+      "id": "ab4d330c-38c7-4a52-b2f2-2f852aa97fb6",
+      "comment": "",
+      "command": "click",
+      "target": "id=password",
+      "targets": [
+        ["id=password", "id"],
+        ["name=password", "name"],
+        ["css=#password", "css:finder"],
+        ["xpath=//input[@id='password']", "xpath:attributes"],
+        ["xpath=//div[2]/input", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "dd7a97a9-2879-41e8-94b0-f1b85b891868",
+      "comment": "",
+      "command": "type",
+      "target": "id=password",
+      "targets": [
+        ["id=password", "id"],
+        ["name=password", "name"],
+        ["css=#password", "css:finder"],
+        ["xpath=//input[@id='password']", "xpath:attributes"],
+        ["xpath=//div[2]/input", "xpath:position"]
+      ],
+      "value": "lukalt123"
+    }, {
+      "id": "1eb9da74-d48e-490a-af01-b2e985600f07",
+      "comment": "",
+      "command": "click",
+      "target": "css=.btn",
+      "targets": [
+        ["css=.btn", "css:finder"],
+        ["xpath=//button[@type='submit']", "xpath:attributes"],
+        ["xpath=//button", "xpath:position"],
+        ["xpath=//button[contains(.,'Nastavi')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "716af710-09fe-4077-955d-ea0ecf93edf4",
+      "comment": "",
+      "command": "assertText",
+      "target": "css=.d-flex",
+      "targets": [
+        ["css=.d-flex", "css:finder"],
+        ["xpath=//div/div", "xpath:position"]
+      ],
+      "value": "Pogresno korisnicko ime ili sifra\\nKorisničko ime:\\nLozinka:\\nNastavi"
+    }]
   }],
   "suites": [{
     "id": "e4f6fed1-2595-4a81-bc60-907f92054368",
@@ -2123,6 +2614,13 @@
     "parallel": false,
     "timeout": 300,
     "tests": ["c3fa5e38-28f3-4e12-9e46-27fdf82dba55", "1e2b7f44-b06d-4244-831f-31b24b52a3f1", "d34203a8-08ca-4403-8649-faf6a799cf2d", "ab148f86-6b1c-49f0-a6de-fb7c08b4f3e1", "97c62fa1-f6d3-42d7-a814-42eb5e953af9", "ba628a0b-4ebe-4430-a014-a24810ee765a", "50fee436-e55e-4fca-83cd-692548867e1f", "6627a300-ab02-4abe-830a-70e27b57265a", "71c94fa4-6dc2-4998-86b6-aee2a03c3f51", "96eeea50-b34c-4c7b-bd28-dd987c1abc86", "5c2b44e2-e7ae-4463-9d31-142ebea095b6"]
+  }, {
+    "id": "3c245f79-d5f0-4779-9840-8fd743da28b6",
+    "name": "LogIn korisnika",
+    "persistSession": false,
+    "parallel": false,
+    "timeout": 300,
+    "tests": ["c9debed4-f250-423f-bc32-c2dcb0754a58", "f93803a8-8743-457a-9d0a-230af124afaf", "ef013e08-3ed4-41a3-8c9e-e3690c22d9da", "04c9e313-140d-41a8-b64b-ad7ab831b60c", "6e8001aa-9a70-487b-b638-214abb04e40c"]
   }],
   "urls": ["http://localhost:8000/"],
   "plugins": []
