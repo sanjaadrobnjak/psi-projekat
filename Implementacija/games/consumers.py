@@ -146,6 +146,7 @@ class GameConsumer(JsonWebsocketConsumer):
             }
             self.send_both(update_ui)
             self.send_both({'type': 'update_timer', 'data': {'value': 20}})  
+            
         elif 3<=next_round<=12:
             next_game = OdigranaIgra.objects.get(Okrsaj=self.game, RedniBrojIgre=next_round).Igra.skoknamrezu
             update_ui={
@@ -179,6 +180,7 @@ class GameConsumer(JsonWebsocketConsumer):
             #self.send_both(update_ui)
             self.send_both({'type': 'update_timer', 'data': {'value': 100}})
 
+            """
         elif 17<=next_round<=18:
             um = OdigranaIgra.objects.get(Okrsaj=self.game, RedniBrojIgre=next_round).Igra.umrezavanje
             active_player = 'blue' if next_round % 2 != 0 else 'orange'
@@ -218,7 +220,7 @@ class GameConsumer(JsonWebsocketConsumer):
             # self.send_both({'type': 'update_timer', 'data': {'value': 90}})
 
             self.send_both({'type': 'update_timer', 'data': {'value': 60}})
-            
+        """
         elif 15<=next_round<=16:
             next_game=OdigranaIgra.objects.get(Okrsaj=self.game, RedniBrojIgre=next_round).Igra.uteknipauku
             active_player = 'blue' if next_round % 2 != 0 else 'orange'
@@ -246,6 +248,7 @@ class GameConsumer(JsonWebsocketConsumer):
             self.opponent.close()
             del consumers[self.game.id]
         consumers[self.game.id]['round'] = next_round
+        
         
         
 
@@ -390,7 +393,7 @@ class GameConsumer(JsonWebsocketConsumer):
                 self.timeout = True
             if self.opponent.timeout or self.opponent.answer is not None:
                 self.game1_round_over()
-
+        
         if 3<=round_num<=12:  
             if self.answer is None:
                 self.timeout = True
@@ -400,11 +403,11 @@ class GameConsumer(JsonWebsocketConsumer):
         if 13<=round_num<=14:  
             self.timeout=True
             self.game3_round_over()
-
+            """
         if 17<=round_num<=18:
             self.timeout=True
             self.game4_round_over()
-
+        """
         if 15<=round_num<=16: 
             if self.guessed_letter is None and self.guessed_word is None:
                 self.timeout=True
@@ -592,312 +595,312 @@ class GameConsumer(JsonWebsocketConsumer):
 
     # da li je isteklo vrijeme, azuriranje poena
 
-def game4_round_over(self):
-    """
-        Završava trenutnu rundu igre Umrezavajne.
-        - Proverava da li je igraču isteklo vreme ili je iskoristio sve pokušaje.
-        - Postavlja povratne informacije.
-        - Ažurira poene na osnovu povezanih parova.
-        - Šalje informacije o rundi oba igrača.
-        - Resetuje status runde i učitava sledeću rundu.
-    """
-    round_num = consumers[self.game.id]['round']
-    try:
-        round = OdigranaIgra.objects.get(Okrsaj=self.game, RedniBrojIgre=round_num)
-    except OdigranaIgra.DoesNotExist:
-        print(f"OdigranaIgra with Okrsaj={self.game.id} and RedniBrojIgre={round_num} does not exist.")
-        return
+    def game4_round_over(self):
+        """
+            Završava trenutnu rundu igre Umrezavajne.
+            - Proverava da li je igraču isteklo vreme ili je iskoristio sve pokušaje.
+            - Postavlja povratne informacije.
+            - Ažurira poene na osnovu povezanih parova.
+            - Šalje informacije o rundi oba igrača.
+            - Resetuje status runde i učitava sledeću rundu.
+        """
+        round_num = consumers[self.game.id]['round']
+        try:
+            round = OdigranaIgra.objects.get(Okrsaj=self.game, RedniBrojIgre=round_num)
+        except OdigranaIgra.DoesNotExist:
+            print(f"OdigranaIgra with Okrsaj={self.game.id} and RedniBrojIgre={round_num} does not exist.")
+            return
 
-    um: Umrezavanje = round.Igra.umrezavanje
+        um: Umrezavanje = round.Igra.umrezavanje
 
-    # ako je isteklo vrjeme
-    if self.timeout:
-        my_guess4 = None
-        attempts4 = self.attempts4 if self.attempts4 < 10 else 10
-        feedback = um.get_feedback(my_guess4)
-        finished = False
-    else:
-        my_guess4 = self.my_guess4
-        attempts = self.attempts
-        feedback = um.get_feedback(my_guess4)
-        correct_answers = self.correct_answers
-        finished = True
-
-    active_player = 'blue' if round_num % 2 != 0 else 'orange'
-    passive_player = 'orange' if active_player == 'blue' else 'blue'
-    
-    self.send_both({
-        'type': 'spojnice_feedback',
-        'data': {
-            'feedback': feedback,
-            'finished': finished,
-            'attempts': attempts,
-            'player': self.color
-        },
-        'ui': 'game4'
-    })
-    
-    """
-    if attempts < 10:
-        if self.color == 'blue':
-            round.Igrac1Poeni = um.get_player_and_score(attempts, self.guesses)
+        # ako je isteklo vrjeme
+        if self.timeout:
+            my_guess4 = None
+            attempts4 = self.attempts4 if self.attempts4 < 10 else 10
+            feedback = um.get_feedback(my_guess4)
+            finished = False
         else:
-            round.Igrac2Poeni = um.get_player_and_score(attempts, self.guesses)
-    else:
-        if self.color == 'orange' and self.color == passive_player:
-            round.Igrac2Poeni = um.get_player_and_score(attempts, self.guesses)
-        elif self.color == 'blue' and self.color == passive_player:
-            round.Igrac1Poeni = um.get_player_and_score(attempts, self.guesses)
-    """
-    round.save()
+            my_guess4 = self.my_guess4
+            attempts = self.attempts
+            feedback = um.get_feedback(my_guess4)
+            correct_answers = self.correct_answers
+            finished = True
 
-    if finished or self.attempts == 10 or self.timeout == True:
-        self.attempts = 0
-        self.my_guess4 = None
-        self.opponent.attempts = 0
-        self.opponent.my_guess4 = None
-        self.timeout = False
-        self.opponent.timeout = False
-        # self.load_next_round()
-    self.load_next_round()
-
-def game4_answer(self, content):
-    self.attempts4=content['attempts4']
-    round_num = consumers[self.game.id]['round']
-    try:
-        round = OdigranaIgra.objects.get(Okrsaj=self.game, RedniBrojIgre=round_num)
-    except OdigranaIgra.DoesNotExist:
-        print(f"OdigranaIgra with Okrsaj={self.game.id} and RedniBrojIgre={round_num} does not exist.")
-        return
-
-    um: Umrezavanje = round.Igra.umrezavanje
-
-    feedback=um.get_feedback(self.my_guess4)
-    finished= True
-
-    active_player = 'blue' if round_num % 2 != 0 else 'orange'
-    passive_player = 'orange' if active_player == 'blue' else 'blue'
-
-    current_row = self.attempts - 1 if self.color == active_player else 10
-    
-    self.send_both({
-        'type': 'guess',
-        'data': {
-            'feedback': feedback,
-            'finished': finished,
-            'currentRow' : current_row,
-            'player' : self.color
-            
-        },
-        'ui': 'game4'
-    })
-    
-    """
-    if self.attempts < 10:
-        if self.color == 'blue':
-            round.Igrac1Poeni = um.get_player_and_score(self.attempts, self.my_guess)
-            print(f'game3_answer: {round.Igrac1Poeni=}, {round.Igrac2Poeni=}')
+        active_player = 'blue' if round_num % 2 != 0 else 'orange'
+        passive_player = 'orange' if active_player == 'blue' else 'blue'
+        
+        self.send_both({
+            'type': 'spojnice_feedback',
+            'data': {
+                'feedback': feedback,
+                'finished': finished,
+                'attempts': attempts,
+                'player': self.color
+            },
+            'ui': 'game4'
+        })
+        
+        """
+        if attempts < 10:
+            if self.color == 'blue':
+                round.Igrac1Poeni = um.get_player_and_score(attempts, self.guesses)
+            else:
+                round.Igrac2Poeni = um.get_player_and_score(attempts, self.guesses)
         else:
-            round.Igrac2Poeni = um.get_player_and_score(self.attempts, self.my_guess)
-            print(f'game3_answer: {round.Igrac1Poeni=}, {round.Igrac2Poeni=}')
-    else:
-        if self.color == 'orange' and self.color==passive_player:
-            round.Igrac2Poeni = um.get_player_and_score(self.attempts, self.my_guess)
-            print(f'game3_answer (sedmi pokusaj): {round.Igrac1Poeni=}, {round.Igrac2Poeni=}')
-        elif self.color=='blue' and self.color==passive_player:
-            # Protivnicki igrac je 'blue', njemu se dodaju poeni
-            round.Igrac1Poeni = um.get_player_and_score(self.attempts, self.my_guess)
-            print(f'game3_answer (sedmi pokusaj): {round.Igrac1Poeni=}, {round.Igrac2Poeni=}')
-    """
+            if self.color == 'orange' and self.color == passive_player:
+                round.Igrac2Poeni = um.get_player_and_score(attempts, self.guesses)
+            elif self.color == 'blue' and self.color == passive_player:
+                round.Igrac1Poeni = um.get_player_and_score(attempts, self.guesses)
+        """
+        round.save()
 
-    round.save()
-    if finished or self.attempts==10:
+        if finished or self.attempts == 10 or self.timeout == True:
+            self.attempts = 0
+            self.my_guess4 = None
+            self.opponent.attempts = 0
+            self.opponent.my_guess4 = None
+            self.timeout = False
+            self.opponent.timeout = False
+            # self.load_next_round()
         self.load_next_round()
 
+    def game4_answer(self, content):
+        self.attempts4=content['attempts4']
+        round_num = consumers[self.game.id]['round']
+        try:
+            round = OdigranaIgra.objects.get(Okrsaj=self.game, RedniBrojIgre=round_num)
+        except OdigranaIgra.DoesNotExist:
+            print(f"OdigranaIgra with Okrsaj={self.game.id} and RedniBrojIgre={round_num} does not exist.")
+            return
 
-"""
-    zavrsava trenutnu rundu igre Utekni pauku
-    tako sto proverava da li je igracu isteklo vreme pre nego sto je iskoristio sve pokusaje i ukoliko jeste
-    postavlja povratne informacije kao da je runda zavrsena (ako igracu nije isteklo vreme podtsvlja povratne informacije na osnovu odgovora igraca)
-    i azurira poene na osnovu odgovora igraca, salje informacije o rundi obojici igraca, resetuje status runde i ucitava sledecu rundu
-"""
-def game5_round_over(self):
-    round_num = consumers[self.game.id]['round']
-    try:
-        round = OdigranaIgra.objects.get(Okrsaj=self.game, RedniBrojIgre=round_num)
-    except OdigranaIgra.DoesNotExist:
-        print(f"OdigranaIgra with Okrsaj={self.game.id} and RedniBrojIgre={round_num} does not exist.")
-        return
+        um: Umrezavanje = round.Igra.umrezavanje
 
-    up: UtekniPauku = round.Igra.uteknipauku
-    rec = up.TrazenaRec
+        feedback=um.get_feedback(self.my_guess4)
+        finished= True
 
-    if self.timeout:
-        guessed_letter = ''
-        guessed_word = ""
-        errors = 7
-        feedback = ["*"] * 8
-        finished = False    
-    else:
-        guessed_letter = self.guessed_letter
-        guessed_word = self.guessed_word
-        errors = self.errors
-        if guessed_letter!=None:
-            feedback, status = up.get_feedback(guessed_letter, self.feedback)
-            self.guessed_array.append(guessed_letter)
+        active_player = 'blue' if round_num % 2 != 0 else 'orange'
+        passive_player = 'orange' if active_player == 'blue' else 'blue'
+
+        current_row = self.attempts - 1 if self.color == active_player else 10
+        
+        self.send_both({
+            'type': 'guess',
+            'data': {
+                'feedback': feedback,
+                'finished': finished,
+                'currentRow' : current_row,
+                'player' : self.color
+                
+            },
+            'ui': 'game4'
+        })
+        
+        """
+        if self.attempts < 10:
+            if self.color == 'blue':
+                round.Igrac1Poeni = um.get_player_and_score(self.attempts, self.my_guess)
+                print(f'game3_answer: {round.Igrac1Poeni=}, {round.Igrac2Poeni=}')
+            else:
+                round.Igrac2Poeni = um.get_player_and_score(self.attempts, self.my_guess)
+                print(f'game3_answer: {round.Igrac1Poeni=}, {round.Igrac2Poeni=}')
         else:
-            feedback, status = up.get_feedback_word(guessed_word, self.feedback)
-            self.guessed_array.append(guessed_word)
+            if self.color == 'orange' and self.color==passive_player:
+                round.Igrac2Poeni = um.get_player_and_score(self.attempts, self.my_guess)
+                print(f'game3_answer (sedmi pokusaj): {round.Igrac1Poeni=}, {round.Igrac2Poeni=}')
+            elif self.color=='blue' and self.color==passive_player:
+                # Protivnicki igrac je 'blue', njemu se dodaju poeni
+                round.Igrac1Poeni = um.get_player_and_score(self.attempts, self.my_guess)
+                print(f'game3_answer (sedmi pokusaj): {round.Igrac1Poeni=}, {round.Igrac2Poeni=}')
+        """
+
+        round.save()
+        if finished or self.attempts==10:
+            self.load_next_round()
+
+
+    """
+        zavrsava trenutnu rundu igre Utekni pauku
+        tako sto proverava da li je igracu isteklo vreme pre nego sto je iskoristio sve pokusaje i ukoliko jeste
+        postavlja povratne informacije kao da je runda zavrsena (ako igracu nije isteklo vreme podtsvlja povratne informacije na osnovu odgovora igraca)
+        i azurira poene na osnovu odgovora igraca, salje informacije o rundi obojici igraca, resetuje status runde i ucitava sledecu rundu
+    """
+    def game5_round_over(self):
+        round_num = consumers[self.game.id]['round']
+        try:
+            round = OdigranaIgra.objects.get(Okrsaj=self.game, RedniBrojIgre=round_num)
+        except OdigranaIgra.DoesNotExist:
+            print(f"OdigranaIgra with Okrsaj={self.game.id} and RedniBrojIgre={round_num} does not exist.")
+            return
+
+        up: UtekniPauku = round.Igra.uteknipauku
+        rec = up.TrazenaRec
+
+        if self.timeout:
+            guessed_letter = ''
+            guessed_word = ""
+            errors = 7
+            feedback = ["*"] * 8
+            finished = False    
+        else:
+            guessed_letter = self.guessed_letter
+            guessed_word = self.guessed_word
+            errors = self.errors
+            if guessed_letter!=None:
+                feedback, status = up.get_feedback(guessed_letter, self.feedback)
+                self.guessed_array.append(guessed_letter)
+            else:
+                feedback, status = up.get_feedback_word(guessed_word, self.feedback)
+                self.guessed_array.append(guessed_word)
+            finished = True
+            for i in range(len(feedback)):
+                if feedback[i] == "*":
+                    finished = False
+
+        active_player = 'blue' if round_num % 2 != 0 else 'orange'
+        passive_player = 'orange' if active_player == 'blue' else 'blue'
+
+        numErrors = errors if errors<7 else 7
+
+        self.send_both({
+            'type': 'guess2',
+            'data': {
+                'feedback': feedback,
+                'finished': finished,
+                'numGuess': numErrors,
+                'targetWord': up.TrazenaRec,
+                'player': self.color,
+                'guessed_array': self.guessed_array
+            },
+            'ui': 'game5'
+        })
+
+        if errors < 7 and guessed_letter != None:
+            if self.color == 'blue':
+                round.Igrac1Poeni = up.get_player_and_score(errors, guessed_letter, feedback)
+            else:
+                round.Igrac2Poeni = up.get_player_and_score(errors, guessed_letter, feedback)
+        elif errors >= 7 and guessed_letter != None:
+            if self.color == 'orange' and self.color == passive_player:
+                round.Igrac2Poeni = up.get_player_and_score(errors, guessed_letter, feedback)
+            elif self.color == 'blue' and self.color == passive_player:
+                round.Igrac1Poeni = up.get_player_and_score(errors, guessed_letter, feedback)
+        elif errors < 7 and guessed_word != None:
+            if self.color == 'blue':
+                round.Igrac1Poeni = up.get_player_and_score_word(errors, guessed_word, feedback)
+            else:
+                round.Igrac2Poeni = up.get_player_and_score_word(errors, guessed_word, feedback)
+        elif errors >= 7 and guessed_word != None:
+            if self.color == 'orange' and self.color == passive_player:
+                round.Igrac2Poeni = up.get_player_and_score_word(errors, guessed_word, feedback)
+            elif self.color == 'blue' and self.color == passive_player:
+                round.Igrac1Poeni = up.get_player_and_score_word(errors, guessed_word, feedback)
+
+        round.save()
+        
+        if finished or self.errors >= 7 or self.timeout:
+            self.errors = 0
+            self.guessed_letter = None
+            self.guessed_word = None
+            self.feedback = ["*"] * 8
+            self.timeout = False
+            self.opponent.errors = 0
+            self.opponent.guessed_letter = None
+            self.opponent.guessed_word = None
+            self.opponent.feedback = ["*"] * 8
+            self.opponent.timeout = False
+            self.load_next_round()
+
+    """
+        funkcija obradjuje odgovor igraca u trecoj igri Utekni pauku, 
+        tako sto najpre cuva rec i slovo koje je igrac unep kao i broj napravljenih gresaka iz poruke klijenta, 
+        dohvata potrebne informacije o rundi iz objekta OdigranaIgra kao i informacije da li je igac pogodio zadatu rec pomocu objekta UtekniPauku;
+        zatim salje poruku klijentima, koja sadrzi povratne informacije o tacnosti reci koju je korisnik uneo, da li je runda gotova, broju gresaka, zadatoj reci i pokusanim recima i slovima, igracu koji je na potezu;
+        nakon toga se azuriraju poeni igracu koji je na potezu u zavisnosti tacnosti reci ili slova koje je uneo;
+        i na kraju se cuva stanje i prelazi na sledecu rundu ukoliko je napravljeno odredjeno gresaka ili ukoliko je zadata rec pogodjena
+    """
+    def game5_answer(self, content):
+        
+        self.guessed_word=content['word']
+        self.guessed_letter=content['letter']
+        self.errors=content['errors']
+        status = True
+        round_num = consumers[self.game.id]['round']
+        try:
+            round = OdigranaIgra.objects.get(Okrsaj=self.game, RedniBrojIgre=round_num)
+        except OdigranaIgra.DoesNotExist:
+            print(f"OdigranaIgra with Okrsaj={self.game.id} and RedniBrojIgre={round_num} does not exist.")
+            return
+        up: UtekniPauku = round.Igra.uteknipauku
+        if self.guessed_letter != None:
+            feedback, status =up.get_feedback(self.guessed_letter, self.feedback)
+            self.guessed_array.append(self.guessed_letter)
+        else:
+            feedback, status = up.get_feedback_word(self.guessed_word, self.feedback)
+            self.guessed_array.append(self.guessed_word)
         finished = True
         for i in range(len(feedback)):
             if feedback[i] == "*":
                 finished = False
+        if (status is False):
+            self.errors += 1
+        active_player = 'blue' if round_num % 2 != 0 else 'orange'
+        passive_player = 'orange' if active_player == 'blue' else 'blue'
+        
+        print(f'game5_answer: {feedback=}, {finished=}, {self.color=}, {self.guessed_letter=}, {self.guessed_word=}, {self.errors=}') # Dodat red za proveru
 
-    active_player = 'blue' if round_num % 2 != 0 else 'orange'
-    passive_player = 'orange' if active_player == 'blue' else 'blue'
-
-    numErrors = errors if errors<7 else 7
-
-    self.send_both({
-        'type': 'guess2',
-        'data': {
-            'feedback': feedback,
-            'finished': finished,
-            'numGuess': numErrors,
-            'targetWord': up.TrazenaRec,
-            'player': self.color,
-            'guessed_array': self.guessed_array
-        },
-        'ui': 'game5'
-    })
-
-    if errors < 7 and guessed_letter != None:
-        if self.color == 'blue':
-            round.Igrac1Poeni = up.get_player_and_score(errors, guessed_letter, feedback)
-        else:
-            round.Igrac2Poeni = up.get_player_and_score(errors, guessed_letter, feedback)
-    elif errors >= 7 and guessed_letter != None:
-        if self.color == 'orange' and self.color == passive_player:
-            round.Igrac2Poeni = up.get_player_and_score(errors, guessed_letter, feedback)
-        elif self.color == 'blue' and self.color == passive_player:
-            round.Igrac1Poeni = up.get_player_and_score(errors, guessed_letter, feedback)
-    elif errors < 7 and guessed_word != None:
-        if self.color == 'blue':
-            round.Igrac1Poeni = up.get_player_and_score_word(errors, guessed_word, feedback)
-        else:
-            round.Igrac2Poeni = up.get_player_and_score_word(errors, guessed_word, feedback)
-    elif errors >= 7 and guessed_word != None:
-        if self.color == 'orange' and self.color == passive_player:
-            round.Igrac2Poeni = up.get_player_and_score_word(errors, guessed_word, feedback)
-        elif self.color == 'blue' and self.color == passive_player:
-            round.Igrac1Poeni = up.get_player_and_score_word(errors, guessed_word, feedback)
-
-    round.save()
-    
-    if finished or self.errors >= 7 or self.timeout:
-        self.errors = 0
-        self.guessed_letter = None
-        self.guessed_word = None
-        self.feedback = ["*"] * 8
-        self.timeout = False
-        self.opponent.errors = 0
-        self.opponent.guessed_letter = None
-        self.opponent.guessed_word = None
-        self.opponent.feedback = ["*"] * 8
-        self.opponent.timeout = False
-        self.load_next_round()
-
-"""
-    funkcija obradjuje odgovor igraca u trecoj igri Utekni pauku, 
-    tako sto najpre cuva rec i slovo koje je igrac unep kao i broj napravljenih gresaka iz poruke klijenta, 
-    dohvata potrebne informacije o rundi iz objekta OdigranaIgra kao i informacije da li je igac pogodio zadatu rec pomocu objekta UtekniPauku;
-    zatim salje poruku klijentima, koja sadrzi povratne informacije o tacnosti reci koju je korisnik uneo, da li je runda gotova, broju gresaka, zadatoj reci i pokusanim recima i slovima, igracu koji je na potezu;
-    nakon toga se azuriraju poeni igracu koji je na potezu u zavisnosti tacnosti reci ili slova koje je uneo;
-    i na kraju se cuva stanje i prelazi na sledecu rundu ukoliko je napravljeno odredjeno gresaka ili ukoliko je zadata rec pogodjena
-"""
-def game5_answer(self, content):
-    
-    self.guessed_word=content['word']
-    self.guessed_letter=content['letter']
-    self.errors=content['errors']
-    status = True
-    round_num = consumers[self.game.id]['round']
-    try:
-        round = OdigranaIgra.objects.get(Okrsaj=self.game, RedniBrojIgre=round_num)
-    except OdigranaIgra.DoesNotExist:
-        print(f"OdigranaIgra with Okrsaj={self.game.id} and RedniBrojIgre={round_num} does not exist.")
-        return
-    up: UtekniPauku = round.Igra.uteknipauku
-    if self.guessed_letter != None:
-        feedback, status =up.get_feedback(self.guessed_letter, self.feedback)
-        self.guessed_array.append(self.guessed_letter)
-    else:
-        feedback, status = up.get_feedback_word(self.guessed_word, self.feedback)
-        self.guessed_array.append(self.guessed_word)
-    finished = True
-    for i in range(len(feedback)):
-        if feedback[i] == "*":
-            finished = False
-    if (status is False):
-        self.errors += 1
-    active_player = 'blue' if round_num % 2 != 0 else 'orange'
-    passive_player = 'orange' if active_player == 'blue' else 'blue'
-    
-    print(f'game5_answer: {feedback=}, {finished=}, {self.color=}, {self.guessed_letter=}, {self.guessed_word=}, {self.errors=}') # Dodat red za proveru
-
-    numErrors = self.errors if self.errors<7 else 7
-    
-    self.send_both({
-        'type': 'guess2',
-        'data': {
-            'feedback': feedback,
-            'finished': finished,
-            'errors' : numErrors,
-            'targetWord' : up.TrazenaRec,
-            'player' : self.color,
-            'guessed_array': self.guessed_array
-            
-        },
-        'ui': 'game5'
-    })
-    
-    if self.errors < 7 and self.guessed_letter != None:
-        if self.color == 'blue':
-            round.Igrac1Poeni = up.get_player_and_score(self.errors, self.guessed_letter, feedback)
-            print(f'game5_answer: {round.Igrac1Poeni=}, {round.Igrac2Poeni=}')
-        else:
-            round.Igrac2Poeni = up.get_player_and_score(self.errors, self.guessed_letter, feedback)
-            print(f'game5_answer: {round.Igrac1Poeni=}, {round.Igrac2Poeni=}')
-    elif self.errors >= 7 and self.guessed_letter != None:  # Ovo je sedmi pokusaj
-        if self.color == 'orange' and self.color==passive_player:
-            # Protivnicki igrac je 'orange', njemu se dodaju poeni
-            round.Igrac2Poeni = up.get_player_and_score(self.errors, self.guessed_letter, feedback)
-            print(f'game5_answer (sedmi pokusaj): {round.Igrac1Poeni=}, {round.Igrac2Poeni=}')
-        elif self.color=='blue' and self.color==passive_player:
-            # Protivnicki igrac je 'blue', njemu se dodaju poeni
-            round.Igrac1Poeni = up.get_player_and_score(self.errors, self.guessed_letter, feedback)
-            print(f'game5_answer (sedmi pokusaj): {round.Igrac1Poeni=}, {round.Igrac2Poeni=}')
-    elif self.errors < 7 and self.guessed_word != None:
-        if self.color == 'blue':
-            round.Igrac1Poeni = up.get_player_and_score_word(self.errors, self.guessed_word, feedback)
-            print(f'game5_answer: {round.Igrac1Poeni=}, {round.Igrac2Poeni=}')
-        else:
-            round.Igrac2Poeni = up.get_player_and_score_word(self.errors, self.guessed_word, feedback)
-            print(f'game5_answer: {round.Igrac1Poeni=}, {round.Igrac2Poeni=}')
-    elif self.errors >= 7 and self.guessed_word != None:  # Ovo je sedmi pokusaj
-        if self.color == 'orange' and self.color==passive_player:
-            # Protivnicki igrac je 'orange', njemu se dodaju poeni
-            round.Igrac2Poeni = up.get_player_and_score_word(self.errors, self.guessed_word, feedback)
-            print(f'game5_answer (sedmi pokusaj): {round.Igrac1Poeni=}, {round.Igrac2Poeni=}')
-        elif self.color=='blue' and self.color==passive_player:
-            # Protivnicki igrac je 'blue', njemu se dodaju poeni
-            round.Igrac1Poeni = up.get_player_and_score_word(self.errors, self.guessed_word, feedback)
-            print(f'game5_answer (sedmi pokusaj): {round.Igrac1Poeni=}, {round.Igrac2Poeni=}')
+        numErrors = self.errors if self.errors<7 else 7
+        
+        self.send_both({
+            'type': 'guess2',
+            'data': {
+                'feedback': feedback,
+                'finished': finished,
+                'errors' : numErrors,
+                'targetWord' : up.TrazenaRec,
+                'player' : self.color,
+                'guessed_array': self.guessed_array
+                
+            },
+            'ui': 'game5'
+        })
+        
+        if self.errors < 7 and self.guessed_letter != None:
+            if self.color == 'blue':
+                round.Igrac1Poeni = up.get_player_and_score(self.errors, self.guessed_letter, feedback)
+                print(f'game5_answer: {round.Igrac1Poeni=}, {round.Igrac2Poeni=}')
+            else:
+                round.Igrac2Poeni = up.get_player_and_score(self.errors, self.guessed_letter, feedback)
+                print(f'game5_answer: {round.Igrac1Poeni=}, {round.Igrac2Poeni=}')
+        elif self.errors >= 7 and self.guessed_letter != None:  # Ovo je sedmi pokusaj
+            if self.color == 'orange' and self.color==passive_player:
+                # Protivnicki igrac je 'orange', njemu se dodaju poeni
+                round.Igrac2Poeni = up.get_player_and_score(self.errors, self.guessed_letter, feedback)
+                print(f'game5_answer (sedmi pokusaj): {round.Igrac1Poeni=}, {round.Igrac2Poeni=}')
+            elif self.color=='blue' and self.color==passive_player:
+                # Protivnicki igrac je 'blue', njemu se dodaju poeni
+                round.Igrac1Poeni = up.get_player_and_score(self.errors, self.guessed_letter, feedback)
+                print(f'game5_answer (sedmi pokusaj): {round.Igrac1Poeni=}, {round.Igrac2Poeni=}')
+        elif self.errors < 7 and self.guessed_word != None:
+            if self.color == 'blue':
+                round.Igrac1Poeni = up.get_player_and_score_word(self.errors, self.guessed_word, feedback)
+                print(f'game5_answer: {round.Igrac1Poeni=}, {round.Igrac2Poeni=}')
+            else:
+                round.Igrac2Poeni = up.get_player_and_score_word(self.errors, self.guessed_word, feedback)
+                print(f'game5_answer: {round.Igrac1Poeni=}, {round.Igrac2Poeni=}')
+        elif self.errors >= 7 and self.guessed_word != None:  # Ovo je sedmi pokusaj
+            if self.color == 'orange' and self.color==passive_player:
+                # Protivnicki igrac je 'orange', njemu se dodaju poeni
+                round.Igrac2Poeni = up.get_player_and_score_word(self.errors, self.guessed_word, feedback)
+                print(f'game5_answer (sedmi pokusaj): {round.Igrac1Poeni=}, {round.Igrac2Poeni=}')
+            elif self.color=='blue' and self.color==passive_player:
+                # Protivnicki igrac je 'blue', njemu se dodaju poeni
+                round.Igrac1Poeni = up.get_player_and_score_word(self.errors, self.guessed_word, feedback)
+                print(f'game5_answer (sedmi pokusaj): {round.Igrac1Poeni=}, {round.Igrac2Poeni=}')
 
 
-    round.save()
-    if finished or self.errors>=7 or self.timeout:
-        #self.game3_round_over()
-        self.feedback = ["*"] * 8
-        self.guessed_array = []
-        self.load_next_round()
+        round.save()
+        if finished or self.errors>=7 or self.timeout:
+            #self.game3_round_over()
+            self.feedback = ["*"] * 8
+            self.guessed_array = []
+            self.load_next_round()

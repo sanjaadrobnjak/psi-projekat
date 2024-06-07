@@ -184,7 +184,7 @@ function setupWebsocketConnection() {
                 removeGame3Listeners();//uklanja slusaoce dogadjaja kada je protivnik na potezu
             }
             break;
-        case end_turn_update4:
+        case 'end_turn_update4':
             console.log("kraj runde");
             const buttons4 = document.querySelectorAll(`#${ui} button`);
             buttons4.forEach(button => {
