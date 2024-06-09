@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: T2NeuspesnoPrijavljivanjeKorImePrazno
+-------------------------------------------------------------------------------
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.263 s - in T2NeuspesnoPrijavljivanjeKorImePrazno
