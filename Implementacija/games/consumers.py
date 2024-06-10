@@ -180,7 +180,6 @@ class GameConsumer(JsonWebsocketConsumer):
             #self.send_both(update_ui)
             self.send_both({'type': 'update_timer', 'data': {'value': 100}})
 
-            """
         elif 17<=next_round<=18:
             um = OdigranaIgra.objects.get(Okrsaj=self.game, RedniBrojIgre=next_round).Igra.umrezavanje
             active_player = 'blue' if next_round % 2 != 0 else 'orange'
@@ -220,7 +219,6 @@ class GameConsumer(JsonWebsocketConsumer):
             # self.send_both({'type': 'update_timer', 'data': {'value': 90}})
 
             self.send_both({'type': 'update_timer', 'data': {'value': 60}})
-        """
         elif 15<=next_round<=16:
             next_game=OdigranaIgra.objects.get(Okrsaj=self.game, RedniBrojIgre=next_round).Igra.uteknipauku
             active_player = 'blue' if next_round % 2 != 0 else 'orange'
@@ -403,11 +401,11 @@ class GameConsumer(JsonWebsocketConsumer):
         if 13<=round_num<=14:  
             self.timeout=True
             self.game3_round_over()
-            """
+
         if 17<=round_num<=18:
             self.timeout=True
             self.game4_round_over()
-        """
+            
         if 15<=round_num<=16: 
             if self.guessed_letter is None and self.guessed_word is None:
                 self.timeout=True
