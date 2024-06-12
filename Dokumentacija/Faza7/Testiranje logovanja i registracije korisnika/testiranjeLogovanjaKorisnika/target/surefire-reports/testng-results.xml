@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testng-results skipped="0" failed="0" total="1" passed="1">
+  <reporter-output>
+  </reporter-output>
+  <suite name="Testa1_UspjesnoLogovanjeKorisnika" duration-ms="48" started-at="2024-06-10T17:08:00Z" finished-at="2024-06-10T17:08:00Z">
+    <groups>
+    </groups>
+    <test name="Command line test" duration-ms="48" started-at="2024-06-10T17:08:00Z" finished-at="2024-06-10T17:08:00Z">
+      <class name="Testa1_UspjesnoLogovanjeKorisnika">
+        <test-method status="PASS" signature="setUpMethod()[pri:0, instance:Testa1_UspjesnoLogovanjeKorisnika@506e6d5e]" name="setUpMethod" is-config="true" duration-ms="0" started-at="2024-06-10T19:08:00Z" finished-at="2024-06-10T19:08:00Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- setUpMethod -->
+        <test-method status="PASS" signature="logovanjeTest()[pri:0, instance:Testa1_UspjesnoLogovanjeKorisnika@506e6d5e]" name="logovanjeTest" duration-ms="48" started-at="2024-06-10T19:08:00Z" finished-at="2024-06-10T19:08:00Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- logovanjeTest -->
+        <test-method status="PASS" signature="setUpClass()[pri:0, instance:Testa1_UspjesnoLogovanjeKorisnika@506e6d5e]" name="setUpClass" is-config="true" duration-ms="0" started-at="2024-06-10T19:08:00Z" finished-at="2024-06-10T19:08:00Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- setUpClass -->
+        <test-method status="PASS" signature="tearDownClass()[pri:0, instance:Testa1_UspjesnoLogovanjeKorisnika@506e6d5e]" name="tearDownClass" is-config="true" duration-ms="0" started-at="2024-06-10T19:08:00Z" finished-at="2024-06-10T19:08:00Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- tearDownClass -->
+        <test-method status="PASS" signature="tearDownMethod()[pri:0, instance:Testa1_UspjesnoLogovanjeKorisnika@506e6d5e]" name="tearDownMethod" is-config="true" duration-ms="0" started-at="2024-06-10T19:08:00Z" finished-at="2024-06-10T19:08:00Z">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- tearDownMethod -->
+      </class> <!-- Testa1_UspjesnoLogovanjeKorisnika -->
+    </test> <!-- Command line test -->
+  </suite> <!-- Testa1_UspjesnoLogovanjeKorisnika -->
+</testng-results>
