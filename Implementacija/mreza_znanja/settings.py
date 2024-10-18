@@ -86,7 +86,7 @@ DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
         "NAME": "mrezaznanja",
-        "PASSWORD": "123",
+        #"PASSWORD": "123",
         "USER": "root",
         'CONN_MAX_AGE': None
     }
