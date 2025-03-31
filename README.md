@@ -5,7 +5,7 @@ An educational web application designed as a series of engaging games that allow
 
 ## Architecture
 The system follows a three-layer architecture:
-- **Client Layer:** For users, moderators, and administrators, built with HTML5, CSS, and JavaScript.
+- **Client Layer:** For guests, users, moderators, and administrators, built with HTML5, CSS, and JavaScript.
 - **Server Layer:** Manages data and information exchange, developed using Django.
 - **Data Storage Layer:** Uses MySQL for efficient and scalable storage.
 
