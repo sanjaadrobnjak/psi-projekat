@@ -1,7 +1,8 @@
 # Educational Web Application
 
 ## Project Overview
-An educational web application designed as a series of engaging games that allow users to gain new knowledge and compete with each other, fostering connections among people with shared interests.
+An educational web application designed as a series of engaging games that help users gain new knowledge and compete with each other, fostering connections among people with shared interests. The platform offers real-time multiplayer gameplay, where users can register as Players, Administrators, or Moderators, or join as Guests without registration.
+Players can challenge each other in five different game modes, testing their skills in math, trivia, word puzzles, and logical matching. With built-in profile management and real-time matchmaking, the app creates an interactive and competitive environment that makes learning both fun and dynamic.
 
 ## Architecture
 The system follows a three-layer architecture:
