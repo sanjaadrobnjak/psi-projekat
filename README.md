@@ -24,3 +24,4 @@ The system follows a three-layer architecture:
   - Answer trivia questions as quickly as possible
   - Find the required five-letter word
   - Match terms from the left column with corresponding terms from the right column
+  - Play the classic word-guessing game by guessing the letters of a hidden word before the hangman is completed
