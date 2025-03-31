@@ -19,7 +19,7 @@ The system follows a three-layer architecture:
 - **Profile Management:** View and manage user profiles
 - **Matchmaking:** Start a match,find opponents and compete against real players in real time
 - **Gameplay:** Compete in five different challenges:
-        - Use basic math operations and given numbers to get as close as possible to the target number
+  - Use basic math operations and given numbers to get as close as possible to the target number
         - Answer trivia questions as quickly as possible
         - Find the required five-letter word
         - Match terms from the left column with corresponding terms from the right column
